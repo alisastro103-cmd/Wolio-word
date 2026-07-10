@@ -499,7 +499,25 @@
 
   /* ---- Auto-save ke localStorage ---- */
   var AUTOSAVE_KEY = "wolioWord.autosave.v1";
+  var ARCHIVE_KEY = "wolioWord.archived.v1";
+  var MAX_ARCHIVE = 20;
   var AUTOSAVE_INTERVAL_MS = 10000; // 10 detik
+
+  /* Simpan tab yang cuma "ditutup" (bukan dihapus permanen) biar riwayat & isinya gak hilang */
+  function archiveTab(tab){
+    var list = [];
+    try {
+      var raw = window.localStorage.getItem(ARCHIVE_KEY);
+      if (raw) list = JSON.parse(raw) || [];
+    } catch (e){ list = []; }
+    list.push({
+      filename: tab.filename, content: tab.content, mode: tab.mode,
+      history: tab.history || [], folder: tab.folder || null, closedAt: Date.now()
+    });
+    if (list.length > MAX_ARCHIVE) list = list.slice(list.length - MAX_ARCHIVE);
+    try { window.localStorage.setItem(ARCHIVE_KEY, JSON.stringify(list)); }
+    catch (e){ /* penyimpanan penuh/diblokir, abaikan */ }
+  }
 
   /* ---- Riwayat versi (checkpoint per tab) ---- */
   var MAX_HISTORY = 30;
@@ -508,7 +526,7 @@
   function createTabData(filename, content, mode){
     return {
       id: tabIdSeq++,
-      filename: filename || "Tanpa judul.md",
+      filename: filename || "unsaved.md",
       content: content != null ? content : "",
       mode: mode || "edit",
       dirty: false,
@@ -675,7 +693,7 @@
     tabs = state.tabs.map(function(t){
       return {
         id: t.id,
-        filename: t.filename || "Tanpa judul.md",
+        filename: t.filename || "unsaved.md",
         content: t.content != null ? t.content : "",
         mode: t.mode || "edit",
         dirty: !!t.dirty,
@@ -998,10 +1016,19 @@
   function closeTab(id){
     var idx = tabs.findIndex(function(t){ return t.id === id; });
     if (idx === -1) return;
+    var tab = tabs[idx];
+
+    var hapusPermanen = window.confirm(
+      'Hapus tab "' + tab.filename + '" beserta riwayat versinya?\n\n' +
+      "OK = hapus tab + riwayat versi (permanen)\n" +
+      "Batal = tutup tab aja (riwayat tetap tersimpan)"
+    );
+    if (!hapusPermanen) archiveTab(tab);
+
     var wasActive = (id === activeTabId);
     tabs.splice(idx, 1);
     if (tabs.length === 0){
-      var fresh = createTabData("Tanpa judul.md", "", "edit");
+      var fresh = createTabData("unsaved.md", "", "edit");
       tabs.push(fresh);
       activeTabId = fresh.id;
       loadTabIntoEditor(fresh);
@@ -1011,6 +1038,7 @@
       loadTabIntoEditor(tabs[newIdx]);
     }
     renderTabs();
+    setStatus(hapusPermanen ? 'Tab "' + tab.filename + '" & riwayatnya dihapus.' : 'Tab "' + tab.filename + '" ditutup, riwayat tersimpan.');
   }
 
   filenameInput.addEventListener("input", function(){
@@ -1022,7 +1050,7 @@
   });
 
   newTabBtn.addEventListener("click", function(){
-    addNewTab("Tanpa judul.md", "");
+    addNewTab("unsaved.md", "");
     setStatus("Tab proyek baru dibuat.");
     editor.focus();
   });
