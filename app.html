@@ -7,6 +7,15 @@
 
 <meta name="description" content="Editor Markdown gaya VSCode yang berjalan 100% offline di browser.">
 <meta name="theme-color" content="#0d1117">
+<script>
+  // Terapkan tema tersimpan lebih awal (sebelum body dirender) agar tidak ada efek kedip
+  (function(){
+    try {
+      var t = window.localStorage.getItem("wolioWord.theme.v1");
+      if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    } catch (e) {}
+  })();
+</script>
 
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="wolio-logo.svg">

@@ -1330,10 +1330,27 @@
   document.addEventListener("mouseup", stopResize);
   document.addEventListener("touchend", stopResize);
 
-  /* ---- Theme toggle ---- */
+  /* ---- Theme toggle ----
+     Catatan: penerapan tema tersimpan saat pertama kali dibuka sudah
+     ditangani oleh script kecil di <head> (app.html) supaya tidak ada
+     efek "kedip" tema terang sebelum berpindah ke gelap. Di sini kita
+     tinggal urus toggle-nya dan menyimpan pilihan ke localStorage. */
+  var THEME_KEY = "wolioWord.theme.v1";
+
+  function applyTheme(theme){
+    if (theme === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+  }
+
   themeToggle.addEventListener("click", function(){
     var isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    document.documentElement.setAttribute("data-theme", isDark ? "light" : "dark");
+    var next = isDark ? "light" : "dark";
+    applyTheme(next);
+    try { window.localStorage.setItem(THEME_KEY, next); }
+    catch (e) { /* localStorage tidak tersedia, abaikan */ }
   });
 
   /* ---- Impor: file yang diimpor dibuka sebagai tab proyek baru,
