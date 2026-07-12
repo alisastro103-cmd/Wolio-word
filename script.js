@@ -2,11 +2,11 @@
   "use strict";
 
   /* ============================================================
-     1) MARKDOWN PARSER — vanilla JS, tanpa library eksternal.
-        Mendukung: heading, bold/italic/strikethrough, inline code,
-        blok kode berpagar (dengan label bahasa), list (ordered /
-        unordered / task list), blockquote (termasuk nested),
-        tabel, horizontal rule, link, gambar, line break.
+     1) MARKDOWN PARSER — vanilla JS, no external library.
+        Supports: heading, bold/italic/strikethrough, inline code,
+        fenced code blocks (with language label), list (ordered /
+        unordered / task list), blockquote (including nested),
+        tables, horizontal rule, link, image, line break.
      ============================================================ */
 
   function escapeHtml(str){
@@ -18,12 +18,12 @@
   }
 
   /* ============================================================
-     1b) SYNTAX HIGHLIGHTER — vanilla JS, tanpa library eksternal.
-         Tokenizer regex ringan bergaya VS Code untuk blok kode
-         berpagar (```lang). Mendukung: javascript/typescript,
-         python, bash/shell, json, css, html, dan grammar "clike"
-         generik untuk bahasa mirip C (java/c/cpp/go/rust/php/dst).
-         Bahasa yang tidak dikenali ditampilkan polos (tanpa warna).
+     1b) SYNTAX HIGHLIGHTER — vanilla JS, no external library.
+         Lightweight VS Code-style regex tokenizer for fenced
+         code blocks (```lang). Supports: javascript/typescript,
+         python, bash/shell, json, css, html, and a generic "clike"
+         grammar for C-like languages (java/c/cpp/go/rust/php/etc).
+         Unrecognized languages are shown plain (no color).
      ============================================================ */
 
   var LANG_ALIASES = {
@@ -138,20 +138,20 @@
   var COPY_ICON = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>';
   var CHECK_ICON = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"></path></svg>';
 
-  // Inline-level rendering: code spans harus diproses lebih dulu lalu
-  // konten lain di-escape, supaya markup mentah pengguna tidak dieksekusi.
+  // Inline-level rendering: code spans must be processed first, then
+  // other content is escaped, so raw user markup is never executed.
   function renderInline(text){
-    // Lindungi inline code dulu (isi kode tidak boleh diproses lebih lanjut)
+    // Protect inline code first (its content must not be processed further)
     var codeStore = [];
     text = text.replace(/`([^`]+)`/g, function(_, code){
       codeStore.push(escapeHtml(code));
       return "\u0000CODE" + (codeStore.length - 1) + "\u0000";
     });
 
-    // Escape sisanya
+    // Escape the rest
     text = escapeHtml(text);
 
-    // Gambar ![alt](src "title")
+    // Image ![alt](src "title")
     text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,
       function(_, alt, src, title){
         return '<img alt="' + alt + '" src="' + src + '"' + (title ? ' title="' + title + '"' : '') + '>';
@@ -165,21 +165,21 @@
                (/^https?:\/\//i.test(safeHref) ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + label + '</a>';
       });
 
-    // Bold + italic ***text*** atau ___text___
+    // Bold + italic ***text*** or ___text___
     text = text.replace(/(\*\*\*|___)(.+?)\1/g, "<strong><em>$2</em></strong>");
-    // Bold **text** atau __text__
+    // Bold **text** or __text__
     text = text.replace(/(\*\*|__)(.+?)\1/g, "<strong>$2</strong>");
-    // Italic *text* atau _text_
+    // Italic *text* or _text_
     text = text.replace(/(\*|_)([^\s*_][^*_]*?)\1/g, "<em>$2</em>");
     // Strikethrough ~~text~~
     text = text.replace(/~~(.+?)~~/g, "<del>$1</del>");
     // Keyboard <kbd>
     text = text.replace(/&lt;kbd&gt;(.+?)&lt;\/kbd&gt;/g, "<kbd>$1</kbd>");
 
-    // Line break ganda spasi di akhir baris -> <br>
+    // Double trailing space at end of line -> <br>
     text = text.replace(/ {2,}\n/g, "<br>\n");
 
-    // Kembalikan inline code
+    // Restore inline code
     text = text.replace(/\u0000CODE(\d+)\u0000/g, function(_, i){
       return "<code>" + codeStore[i] + "</code>";
     });
@@ -189,13 +189,13 @@
 
   function renderMarkdown(src){
     if (!src || !src.trim()){
-      return '<p class="empty-hint">Belum ada konten. Tulis Markdown di panel editor untuk melihat pratinjau di sini.</p>';
+      return '<p class="empty-hint">No content yet. Write Markdown in the editor panel to see the preview here.</p>';
     }
 
-    // Normalisasi line ending
+    // Normalize line endings
     src = src.replace(/\r\n?/g, "\n");
 
-    // --- 1. Ekstrak blok kode berpagar ``` agar isinya tidak diproses sebagai markdown ---
+    // --- 1. Extract fenced code blocks ``` so their content isn't processed as markdown ---
     var fencedBlocks = [];
     src = src.replace(/^ {0,3}(```|~~~)([^\n`]*)\n([\s\S]*?)\n {0,3}\1[ \t]*$/gm,
       function(_, fence, lang, code){
@@ -212,7 +212,7 @@
     while (i < lines.length){
       var line = lines[i];
 
-      // Placeholder blok kode
+      // Code block placeholder
       var fenceMatch = line.match(/^\u0000FENCE(\d+)\u0000$/);
       if (fenceMatch){
         var block = fencedBlocks[parseInt(fenceMatch[1], 10)];
@@ -222,7 +222,7 @@
           continue;
         }
         var langLabel = block.lang ? '<span class="lang-tag">' + escapeHtml(block.lang) + '</span>' : "";
-        var copyBtn = '<button type="button" class="copy-btn" data-copy-icon title="Salin kode">' + COPY_ICON + '</button>';
+        var copyBtn = '<button type="button" class="copy-btn" data-copy-icon title="Copy code">' + COPY_ICON + '</button>';
         var toolbar = '<div class="code-toolbar">' + langLabel + copyBtn + '</div>';
         var highlighted = highlightCode(block.code, block.lang);
         html.push('<div class="code-block">' + toolbar + '<pre data-code="' + escapeHtml(block.code) + '"><code>' + highlighted + '</code></pre></div>');
@@ -249,7 +249,7 @@
         continue;
       }
 
-      // Blockquote (kumpulkan baris berturut-turut yang diawali '>')
+      // Blockquote (collect consecutive lines starting with '>')
       if (/^ {0,3}>/.test(line)){
         var quoteLines = [];
         while (i < lines.length && /^ {0,3}>/.test(lines[i])){
@@ -260,7 +260,7 @@
         continue;
       }
 
-      // Tabel: baris header | --- | diikuti baris data
+      // Table: header row | --- | followed by data rows
       if (/\|/.test(line) && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]*\s*$/.test(lines[i+1]) && /-/.test(lines[i+1])){
         var headerCells = line.trim().replace(/^\||\|$/g, "").split("|").map(function(c){return c.trim();});
         var alignRow = lines[i+1].trim().replace(/^\||\|$/g, "").split("|").map(function(c){return c.trim();});
@@ -291,7 +291,7 @@
         continue;
       }
 
-      // List (unordered / ordered / task), termasuk item yang menyambung multi-baris sederhana
+      // List (unordered / ordered / task), including simple multi-line continuation items
       var ulMatch = line.match(/^( {0,3})([-*+]) +(.*)$/);
       var olMatch = line.match(/^( {0,3})(\d+)[.)] +(.*)$/);
       if (ulMatch || olMatch){
@@ -301,7 +301,7 @@
         while (i < lines.length){
           var m = lines[i].match(re);
           if (!m){
-            // baris lanjutan (indented, bukan blank, bukan item baru)
+            // continuation line (indented, not blank, not a new item)
             if (!isBlank(lines[i]) && /^\s+\S/.test(lines[i]) && items.length){
               items[items.length - 1] += " " + lines[i].trim();
               i++;
@@ -325,7 +325,7 @@
         continue;
       }
 
-      // Paragraph (gabungkan baris berturut-turut sampai blank line / blok lain)
+      // Paragraph (merge consecutive lines until a blank line / other block)
       var paraLines = [line];
       i++;
       while (i < lines.length && !isBlank(lines[i]) &&
@@ -345,7 +345,7 @@
   }
 
   /* ============================================================
-     2) STATE, DOM, DAN LOGIKA APLIKASI
+     2) STATE, DOM, AND APPLICATION LOGIC
      ============================================================ */
 
   var editor = document.getElementById("editor");
@@ -393,29 +393,29 @@
   var modeLabelEl = document.getElementById("modeLabel");
 
   var DEFAULT_CONTENT =
-"# Selamat datang di Wolio Word\n\n" +
-"Ini adalah **README.md Viewer & Editor** yang jalan sepenuhnya di browser kamu, tanpa server dan tanpa koneksi internet.\n\n" +
-"## Fitur utama\n\n" +
-"- Mode **Editor**, **Review**, dan **Split**\n" +
-"- Impor file `.md` dari perangkat\n" +
-"- Ekspor ke `.md` atau `.html`\n" +
-"- Tema terang / gelap\n" +
-"- Dukungan tabel, daftar tugas, blok kode, dan kutipan\n\n" +
+"# Welcome to Wolio Word\n\n" +
+"This is a **README.md Viewer & Editor** that runs entirely in your browser, with no server and no internet connection.\n\n" +
+"## Key features\n\n" +
+"- **Editor**, **Review**, and **Split** modes\n" +
+"- Import `.md` files from your device\n" +
+"- Export to `.md` or `.html`\n" +
+"- Light / dark theme\n" +
+"- Support for tables, task lists, code blocks, and quotes\n\n" +
 "```js\n" +
-"// Contoh blok kode\n" +
-"function halo(nama) {\n" +
-"  return `Halo, ${nama}!`;\n" +
+"// Example code block\n" +
+"function hello(name) {\n" +
+"  return `Hello, ${name}!`;\n" +
 "}\n" +
 "```\n\n" +
-"> Edit teks di panel sebelah kiri, lalu lihat hasilnya di sini secara langsung.\n\n" +
-"Baca **PANDUAN.md** yang disertakan dalam proyek ini untuk penjelasan lengkap cara pemakaian.\n";
+"> Edit the text in the left panel, then see the result live here.\n\n" +
+"Read the **GUIDE.md** included in this project for a full usage explanation.\n";
 
-  var WORDS_PER_MINUTE = 200; // rata-rata kecepatan baca
+  var WORDS_PER_MINUTE = 200; // average reading speed
 
   function estimateReadingLabel(words){
-    if (words === 0) return "0 menit baca";
+    if (words === 0) return "0 min read";
     var minutes = words / WORDS_PER_MINUTE;
-    return (minutes < 1 ? "<1 menit baca" : Math.ceil(minutes) + " menit baca");
+    return (minutes < 1 ? "<1 min read" : Math.ceil(minutes) + " min read");
   }
 
   function updateStats(){
@@ -423,7 +423,7 @@
     var lines = text.split("\n").length;
     var words = (text.trim().match(/\S+/g) || []).length;
     var chars = text.length;
-    statsEl.textContent = lines + " baris · " + words + " kata · " + chars + " karakter · ~" + estimateReadingLabel(words);
+    statsEl.textContent = lines + " lines · " + words + " words · " + chars + " characters · ~" + estimateReadingLabel(words);
   }
 
   function setStatus(msg){
@@ -435,7 +435,7 @@
     renderMermaidDiagrams(preview);
   }
 
-  /* ---- Diagram Mermaid (dimuat lazy dari CDN, hanya kalau ada blok ```mermaid) ---- */
+  /* ---- Mermaid diagrams (lazy-loaded from CDN, only when a ```mermaid block exists) ---- */
   var mermaidState = "idle"; // idle | loading | ready | failed
   var mermaidWaiters = [];
   function ensureMermaidLoaded(cb){
@@ -471,7 +471,7 @@
         list.forEach(function(n){
           n.setAttribute("data-done", "1");
           var code = n.textContent;
-          n.innerHTML = '<div class="mermaid-fallback">Diagram Mermaid perlu koneksi internet (baru dimuat sekali). Kode diagram:</div><pre>' + escapeHtml(code) + '</pre>';
+          n.innerHTML = '<div class="mermaid-fallback">Mermaid diagrams need an internet connection (loaded once). Diagram code:</div><pre>' + escapeHtml(code) + '</pre>';
         });
         return;
       }
@@ -483,9 +483,9 @@
   }
 
   /* ============================================================
-     1c) TAB PROYEK — setiap tab menyimpan satu dokumen terpisah
-         (nama file, isi editor, mode tampilan), mirip tab Chrome.
-         Nama tab mengikuti nama file yang diimpor / disimpan.
+     1c) PROJECT TABS — each tab stores a separate document
+         (file name, editor content, view mode), similar to Chrome tabs.
+         The tab name follows the imported / saved file name.
      ============================================================ */
 
   var ICON_FILE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 1.5h5.5L12 4v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1Z"/><path d="M9.2 1.5V4h3"/></svg>';
@@ -498,13 +498,13 @@
   var tabIdSeq = 1;
   var currentMode = "edit";
 
-  /* ---- Auto-save ke localStorage ---- */
+  /* ---- Auto-save to localStorage ---- */
   var AUTOSAVE_KEY = "wolioWord.autosave.v1";
   var ARCHIVE_KEY = "wolioWord.archived.v1";
   var MAX_ARCHIVE = 20;
-  var AUTOSAVE_INTERVAL_MS = 10000; // 10 detik
+  var AUTOSAVE_INTERVAL_MS = 10000; // 10 seconds
 
-  /* Simpan tab yang cuma "ditutup" (bukan dihapus permanen) biar riwayat & isinya gak hilang */
+  /* Store tabs that were just "closed" (not permanently deleted) so history & content aren't lost */
   function archiveTab(tab){
     var list = [];
     try {
@@ -517,12 +517,12 @@
     });
     if (list.length > MAX_ARCHIVE) list = list.slice(list.length - MAX_ARCHIVE);
     try { window.localStorage.setItem(ARCHIVE_KEY, JSON.stringify(list)); }
-    catch (e){ /* penyimpanan penuh/diblokir, abaikan */ }
+    catch (e){ /* storage full/blocked, ignore */ }
   }
 
-  /* ---- Riwayat versi (checkpoint per tab) ---- */
+  /* ---- Version history (checkpoint per tab) ---- */
   var MAX_HISTORY = 30;
-  var AUTO_SNAPSHOT_MIN_INTERVAL_MS = 45000; // jangan snapshot otomatis lebih sering dari ini
+  var AUTO_SNAPSHOT_MIN_INTERVAL_MS = 45000; // don't auto-snapshot more often than this
 
   function createTabData(filename, content, mode){
     return {
@@ -542,12 +542,12 @@
 
   function promptSetFolder(tab){
     var current = tab.folder || "";
-    var name = window.prompt('Pindahkan "' + tab.filename + '" ke folder (kosongkan untuk keluar dari folder):', current);
-    if (name === null) return; // dibatalkan
+    var name = window.prompt('Move "' + tab.filename + '" to folder (leave blank to remove from folder):', current);
+    if (name === null) return; // cancelled
     name = name.trim();
     tab.folder = name || null;
     renderTabs();
-    setStatus(name ? 'Tab dipindahkan ke folder "' + name + '".' : "Tab dikeluarkan dari folder.");
+    setStatus(name ? 'Tab moved to folder "' + name + '".' : "Tab removed from folder.");
   }
 
   function getActiveTab(){
@@ -576,9 +576,9 @@
   function maybeAutoSnapshot(tab){
     if (!tab.history) tab.history = [];
     var last = tab.history.length ? tab.history[tab.history.length - 1] : null;
-    if (last && last.content === tab.content) return; // tidak ada perubahan sejak snapshot terakhir
-    if (last && (Date.now() - last.ts) < AUTO_SNAPSHOT_MIN_INTERVAL_MS) return; // terlalu sering
-    pushSnapshot(tab, "otomatis");
+    if (last && last.content === tab.content) return; // no change since the last snapshot
+    if (last && (Date.now() - last.ts) < AUTO_SNAPSHOT_MIN_INTERVAL_MS) return; // too frequent
+    pushSnapshot(tab, "automatic");
   }
 
   function manualCheckpoint(){
@@ -587,12 +587,12 @@
     if (!tab) return;
     pushSnapshot(tab, "manual");
     renderHistoryList();
-    setStatus("Checkpoint riwayat versi disimpan.");
+    setStatus("Version history checkpoint saved.");
   }
 
   function restoreSnapshot(tab, snapshot){
     if (tab.content !== snapshot.content){
-      pushSnapshot(tab, "sebelum pulihkan");
+      pushSnapshot(tab, "before restore");
     }
     tab.content = snapshot.content;
     tab.dirty = true;
@@ -602,7 +602,7 @@
     }
     renderTabs();
     var d = new Date(snapshot.ts);
-    setStatus("Versi pukul " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + " dipulihkan.");
+    setStatus("Version from " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + " restored.");
   }
 
   function formatSnapshotTime(ts){
@@ -621,7 +621,7 @@
     if (!tab || history.length === 0){
       var empty = document.createElement("div");
       empty.className = "history-empty";
-      empty.textContent = "Belum ada checkpoint untuk tab ini.";
+      empty.textContent = "No checkpoints yet for this tab.";
       historyFlyoutList.appendChild(empty);
       return;
     }
@@ -632,12 +632,12 @@
         var info = document.createElement("span");
         info.className = "history-info";
         var tag = snapshot.label === "manual" ? " · checkpoint" :
-                  (snapshot.label === "sebelum pulihkan" ? " · sebelum pulihkan" : "");
+                  (snapshot.label === "before restore" ? " · before restore" : "");
         info.textContent = formatSnapshotTime(snapshot.ts) + tag;
         var restoreBtn = document.createElement("button");
         restoreBtn.type = "button";
         restoreBtn.className = "history-restore-btn";
-        restoreBtn.textContent = "Pulihkan";
+        restoreBtn.textContent = "Restore";
         restoreBtn.addEventListener("click", function(e){
           e.stopPropagation();
           restoreSnapshot(tab, snapshot);
@@ -674,10 +674,10 @@
       var state = autosaveSerialize();
       window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
       var d = new Date(state.savedAt);
-      setStatus("Tersimpan otomatis pukul " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds()) + ".");
+      setStatus("Auto-saved at " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds()) + ".");
       renderHistoryList();
     } catch (err){
-      setStatus("Auto-save gagal — penyimpanan browser penuh atau diblokir.");
+      setStatus("Auto-save failed — browser storage is full or blocked.");
     }
   }
 
@@ -711,7 +711,7 @@
     currentMode = activeTab.mode || "edit";
     loadTabIntoEditor(activeTab);
     renderTabs();
-    setStatus("Draf sebelumnya dipulihkan dari auto-save browser ini.");
+    setStatus("Previous draft restored from this browser's auto-save.");
     return true;
   }
 
@@ -745,7 +745,7 @@
       var closeBtn = document.createElement("button");
       closeBtn.type = "button";
       closeBtn.className = "tab-close";
-      closeBtn.title = "Tutup tab";
+      closeBtn.title = "Close tab";
       closeBtn.innerHTML = ICON_CLOSE;
       closeBtn.addEventListener("click", function(e){
         e.stopPropagation();
@@ -782,7 +782,7 @@
     renderFilesFlyout();
   }
 
-  /* ---- Flyout vertikal daftar tab, dipicu tombol Files di activity bar ---- */
+  /* ---- Vertical tab list flyout, triggered by the Files button in the activity bar ---- */
   function renderFilesFlyout(){
     if (!filesFlyoutList) return;
     filesFlyoutList.innerHTML = "";
@@ -794,7 +794,7 @@
       if (!groups[key]){ groups[key] = []; order.push(key); }
       groups[key].push(tab);
     });
-    // Folder bernama tampil lebih dulu (alfabet), tab tanpa folder di akhir.
+    // Named folders appear first (alphabetically), tabs without a folder come last.
     order.sort(function(a, b){
       if (a === "") return 1;
       if (b === "") return -1;
@@ -810,7 +810,7 @@
       var moveBtn = document.createElement("button");
       moveBtn.type = "button";
       moveBtn.className = "folder-move-btn";
-      moveBtn.title = "Pindah ke folder...";
+      moveBtn.title = "Move to folder...";
       moveBtn.innerHTML = ICON_FOLDER_MOVE;
       moveBtn.addEventListener("click", function(e){
         e.stopPropagation();
@@ -863,7 +863,7 @@
     else openFilesFlyout();
   }
 
-  /* ---- Outline / daftar isi otomatis dari heading Markdown ---- */
+  /* ---- Outline / table of contents auto-generated from Markdown headings ---- */
   function buildOutline(text){
     var lines = text.split("\n");
     var outline = [];
@@ -879,7 +879,7 @@
           lineLength: line.length
         });
       }
-      offset += line.length + 1; // +1 untuk karakter \n
+      offset += line.length + 1; // +1 for the \n character
     }
     return outline;
   }
@@ -898,7 +898,7 @@
     if (outline.length === 0){
       var empty = document.createElement("div");
       empty.className = "history-empty";
-      empty.textContent = "Belum ada heading (#) di dokumen ini.";
+      empty.textContent = "No headings (#) in this document yet.";
       outlineFlyoutList.appendChild(empty);
       return;
     }
@@ -907,7 +907,7 @@
       el.className = "flyout-item outline-item";
       el.style.paddingLeft = (12 + (item.level - 1) * 12) + "px";
       var span = document.createElement("span");
-      span.textContent = item.text || "(tanpa judul)";
+      span.textContent = item.text || "(untitled)";
       el.appendChild(span);
       el.title = item.text;
       el.addEventListener("click", function(){
@@ -955,7 +955,7 @@
     var tab = getActiveTab();
     if (tab) loadTabIntoEditor(tab);
     renderTabs();
-    setStatus('Membuka tab "' + (tab ? tab.filename : "") + '"');
+    setStatus('Opening tab "' + (tab ? tab.filename : "") + '"');
   }
 
   function addNewTab(filename, content){
@@ -968,50 +968,50 @@
     return tab;
   }
 
-  /* ---- Template siap pakai ---- */
+  /* ---- Ready-to-use templates ---- */
   var TEMPLATES = {
     readme:
-      "# Nama Proyek\n\n" +
-      "Deskripsi singkat satu-dua kalimat tentang apa yang dilakukan proyek ini.\n\n" +
-      "## Fitur\n\n" +
-      "- Fitur satu\n- Fitur dua\n- Fitur tiga\n\n" +
-      "## Instalasi\n\n" +
+      "# Project Name\n\n" +
+      "A short one-to-two sentence description of what this project does.\n\n" +
+      "## Features\n\n" +
+      "- Feature one\n- Feature two\n- Feature three\n\n" +
+      "## Installation\n\n" +
       "```\nnpm install\n```\n\n" +
-      "## Cara Pakai\n\n" +
-      "Contoh singkat cara menjalankan atau memakai proyek ini.\n\n" +
-      "## Lisensi\n\nMIT\n",
+      "## Usage\n\n" +
+      "A brief example of how to run or use this project.\n\n" +
+      "## License\n\nMIT\n",
     cv:
-      "# Nama Lengkap\n\n" +
-      "Email · Nomor telepon · Kota domisili\n\n" +
-      "## Ringkasan\n\n" +
-      "Satu paragraf singkat tentang keahlian dan tujuan karier.\n\n" +
-      "## Pengalaman Kerja\n\n" +
-      "**Jabatan — Nama Perusahaan** _(Bulan Tahun – Bulan Tahun)_\n" +
-      "- Pencapaian atau tanggung jawab utama\n- Pencapaian lain\n\n" +
-      "## Pendidikan\n\n" +
-      "**Nama Institusi** — Jurusan _(Tahun – Tahun)_\n\n" +
-      "## Keterampilan\n\n" +
-      "- Keterampilan satu\n- Keterampilan dua\n- Keterampilan tiga\n",
+      "# Full Name\n\n" +
+      "Email · Phone number · City of residence\n\n" +
+      "## Summary\n\n" +
+      "A short paragraph about your skills and career goals.\n\n" +
+      "## Work Experience\n\n" +
+      "**Position — Company Name** _(Month Year – Month Year)_\n" +
+      "- Key achievement or responsibility\n- Another achievement\n\n" +
+      "## Education\n\n" +
+      "**Institution Name** — Major _(Year – Year)_\n\n" +
+      "## Skills\n\n" +
+      "- Skill one\n- Skill two\n- Skill three\n",
     meeting:
-      "# Catatan Rapat — Judul Rapat\n\n" +
-      "**Tanggal:** \n**Peserta:** \n\n" +
+      "# Meeting Notes — Meeting Title\n\n" +
+      "**Date:** \n**Attendees:** \n\n" +
       "## Agenda\n\n" +
-      "1. Poin agenda satu\n2. Poin agenda dua\n\n" +
-      "## Pembahasan\n\n" +
-      "- Ringkasan diskusi\n\n" +
-      "## Keputusan\n\n" +
+      "1. Agenda point one\n2. Agenda point two\n\n" +
+      "## Discussion\n\n" +
+      "- Discussion summary\n\n" +
+      "## Decisions\n\n" +
       "- \n\n" +
-      "## Tindak Lanjut\n\n" +
-      "- [ ] Tugas — Penanggung jawab — Tenggat\n"
+      "## Action Items\n\n" +
+      "- [ ] Task — Owner — Deadline\n"
   };
   var TEMPLATE_FILENAMES = {
     readme: "README.md",
     cv: "CV.md",
-    meeting: "Catatan Rapat.md"
+    meeting: "Meeting Notes.md"
   };
   function newTabFromTemplate(key){
     addNewTab(TEMPLATE_FILENAMES[key], TEMPLATES[key]);
-    setStatus("Tab baru dibuat dari template.");
+    setStatus("New tab created from template.");
     editor.focus();
   }
 
@@ -1020,12 +1020,12 @@
     if (idx === -1) return;
     var tab = tabs[idx];
 
-    var hapusPermanen = window.confirm(
-      'Hapus tab "' + tab.filename + '" beserta riwayat versinya?\n\n' +
-      "OK = hapus tab + riwayat versi (permanen)\n" +
-      "Batal = tutup tab aja (riwayat tetap tersimpan)"
+    var deletePermanently = window.confirm(
+      'Delete tab "' + tab.filename + '" along with its version history?\n\n' +
+      "OK = delete tab + version history (permanent)\n" +
+      "Cancel = just close the tab (history is kept)"
     );
-    if (!hapusPermanen) archiveTab(tab);
+    if (!deletePermanently) archiveTab(tab);
 
     var wasActive = (id === activeTabId);
     tabs.splice(idx, 1);
@@ -1040,7 +1040,7 @@
       loadTabIntoEditor(tabs[newIdx]);
     }
     renderTabs();
-    setStatus(hapusPermanen ? 'Tab "' + tab.filename + '" & riwayatnya dihapus.' : 'Tab "' + tab.filename + '" ditutup, riwayat tersimpan.');
+    setStatus(deletePermanently ? 'Tab "' + tab.filename + '" & its history were deleted.' : 'Tab "' + tab.filename + '" closed, history kept.');
   }
 
   filenameInput.addEventListener("input", function(){
@@ -1053,11 +1053,11 @@
 
   newTabBtn.addEventListener("click", function(){
     addNewTab("unsaved.md", "");
-    setStatus("Tab proyek baru dibuat.");
+    setStatus("New project tab created.");
     editor.focus();
   });
 
-  /* ---- Tombol salin kode (delegasi klik, karena preview di-render ulang dinamis) ---- */
+  /* ---- Copy code button (click delegation, since the preview re-renders dynamically) ---- */
   function copyCodeFromButton(btn){
     var wrap = btn.closest(".code-block");
     var pre = wrap ? wrap.querySelector("pre") : btn.closest("pre");
@@ -1113,7 +1113,7 @@
       tab.dirty = true;
       renderTabs();
     }
-    setStatus("Belum disimpan — perubahan hanya ada di browser ini.");
+    setStatus("Not saved yet — changes only exist in this browser.");
   });
 
   function wrapSelection(before, after, placeholder){
@@ -1137,7 +1137,7 @@
   function insertMermaidSample(){
     var start = editor.selectionStart, end = editor.selectionEnd;
     var val = editor.value;
-    var sample = "```mermaid\ngraph TD\n  A[Mulai] --> B{Cek kondisi}\n  B -->|Ya| C[Lakukan aksi]\n  B -->|Tidak| D[Selesai]\n```\n";
+    var sample = "```mermaid\ngraph TD\n  A[Start] --> B{Check condition}\n  B -->|Yes| C[Do action]\n  B -->|No| D[End]\n```\n";
     editor.value = val.slice(0, start) + sample + val.slice(end);
     var pos = start + sample.length;
     editor.setSelectionRange(pos, pos);
@@ -1153,11 +1153,11 @@
 
   function insertLink(){
     var start = editor.selectionStart, end = editor.selectionEnd;
-    var linkText = selected || "teks tautan";
+    var linkText = selected || "link text";
     var inserted = "[" + linkText + "](url)";
     editor.value = val.slice(0, start) + inserted + val.slice(end);
-    var urlStart = start + linkText.length + 3; // posisi setelah "[linkText]("
-    editor.setSelectionRange(urlStart, urlStart + 3); // pilih "url" agar siap diganti
+    var urlStart = start + linkText.length + 3; // position after "[linkText]("
+    editor.setSelectionRange(urlStart, urlStart + 3); // select "url" so it's ready to be replaced
     editor.focus();
     scheduleRender();
     var tab = getActiveTab();
@@ -1168,8 +1168,8 @@
     updateCursorPos();
   }
 
-  // Tab key -> sisipkan 2 spasi, bukan pindah fokus
-  // Ctrl/Cmd+B -> bold, Ctrl/Cmd+I -> italic, Ctrl/Cmd+L -> sisipkan link
+  // Tab key -> insert 2 spaces, instead of moving focus
+  // Ctrl/Cmd+B -> bold, Ctrl/Cmd+I -> italic, Ctrl/Cmd+L -> insert link
   editor.addEventListener("keydown", function(e){
     var mod = e.ctrlKey || e.metaKey;
     if (e.key === "Tab"){
@@ -1180,17 +1180,17 @@
       scheduleRender();
     } else if (mod && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "b"){
       e.preventDefault();
-      wrapSelection("**", "**", "teks tebal");
+      wrapSelection("**", "**", "bold text");
     } else if (mod && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "i"){
       e.preventDefault();
-      wrapSelection("*", "*", "teks miring");
+      wrapSelection("*", "*", "italic text");
     } else if (mod && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "l"){
       e.preventDefault();
       insertLink();
     }
   });
 
-  /* ---- Drag & drop gambar ke editor -> otomatis jadi Markdown ![alt](data:...) ---- */
+  /* ---- Drag & drop images into the editor -> automatically becomes Markdown ![alt](data:...) ---- */
   var editorPaneBody = document.getElementById("editorPaneBody");
   var IMAGE_MIME_RE = /^image\//;
 
@@ -1215,7 +1215,7 @@
     return new Promise(function(resolve){
       var reader = new FileReader();
       reader.onload = function(){
-        var altText = file.name.replace(/\.[^.]+$/, "") || "gambar";
+        var altText = file.name.replace(/\.[^.]+$/, "") || "image";
         resolve("![" + altText + "](" + reader.result + ")\n");
       };
       reader.onerror = function(){ resolve(""); };
@@ -1228,13 +1228,13 @@
       return IMAGE_MIME_RE.test(f.type);
     });
     if (imageFiles.length === 0){
-      setStatus("Tidak ada file gambar yang bisa disisipkan.");
+      setStatus("No image files could be inserted.");
       return;
     }
-    setStatus("Menyisipkan " + imageFiles.length + " gambar...");
+    setStatus("Inserting " + imageFiles.length + " image(s)...");
     Promise.all(imageFiles.map(readImageAsMarkdown)).then(function(snippets){
       insertTextAtCursor(snippets.join(""));
-      setStatus(imageFiles.length + " gambar disisipkan sebagai Markdown.");
+      setStatus(imageFiles.length + " image(s) inserted as Markdown.");
     });
   }
 
@@ -1292,10 +1292,10 @@
   modePreview.addEventListener("click", function(){ setMode("preview"); });
   modeSplit.addEventListener("click", function(){ setMode("split"); });
 
-  /* ---- Seret batas editor/preview di mode Split ---- */
+  /* ---- Drag the editor/preview boundary in Split mode ---- */
   var resizing = false;
-  var resizeAxis = "row"; // "row" (kiri-kanan) atau "column" (atas-bawah, layar sempit)
-  var SNAP_MARGIN = 0.07; // seret sampai 7% dari ujung -> otomatis ganti mode penuh
+  var resizeAxis = "row"; // "row" (left-right) or "column" (top-bottom, narrow screen)
+  var SNAP_MARGIN = 0.07; // drag to within 7% of the edge -> automatically switch to full mode
 
   function clientPos(e, axis){
     var p = e.touches && e.touches[0] ? e.touches[0] : e;
@@ -1321,10 +1321,10 @@
     paneResizer.classList.remove("dragging");
     document.body.style.userSelect = "";
   }
-  // Diseret sampai mentok ke ujung -> lepas dari Split, otomatis pindah ke mode penuh.
-  // Editor selalu ada di "awal" (atas/kiri) & Preview di "akhir" (bawah/kanan), jadi:
-  // mentok ke awal (atas di layar sempit, kiri di desktop) = Editor mengecil habis -> mode Review.
-  // mentok ke akhir (bawah di layar sempit, kanan di desktop) = Preview mengecil habis -> mode Editor.
+  // Dragged all the way to an edge -> leaves Split, automatically switches to full mode.
+  // Editor is always at the "start" (top/left) & Preview at the "end" (bottom/right), so:
+  // reaching the start (top on narrow screens, left on desktop) = Editor shrinks away -> Review mode.
+  // reaching the end (bottom on narrow screens, right on desktop) = Preview shrinks away -> Editor mode.
   function snapToMode(mode){
     resizing = false;
     paneResizer.classList.remove("dragging");
@@ -1361,10 +1361,10 @@
   document.addEventListener("touchend", stopResize);
 
   /* ---- Theme toggle ----
-     Catatan: penerapan tema tersimpan saat pertama kali dibuka sudah
-     ditangani oleh script kecil di <head> (app.html) supaya tidak ada
-     efek "kedip" tema terang sebelum berpindah ke gelap. Di sini kita
-     tinggal urus toggle-nya dan menyimpan pilihan ke localStorage. */
+     Note: applying the saved theme on first load is already handled
+     by a small script in <head> (app.html) so there's no light-theme
+     "flash" effect before switching to dark. Here we just handle the
+     toggle and save the choice to localStorage. */
   var THEME_KEY = "wolioWord.theme.v1";
 
   function applyTheme(theme){
@@ -1385,11 +1385,11 @@
     var next = isDark ? "light" : "dark";
     applyTheme(next);
     try { window.localStorage.setItem(THEME_KEY, next); }
-    catch (e) { /* localStorage tidak tersedia, abaikan */ }
+    catch (e) { /* localStorage unavailable, ignore */ }
   });
 
-  /* ---- Impor: file yang diimpor dibuka sebagai tab proyek baru,
-         nama tab mengikuti nama file yang diimpor ---- */
+  /* ---- Import: the imported file is opened as a new project tab,
+         the tab name follows the imported file's name ---- */
   fileInput.addEventListener("change", function(){
     var file = fileInput.files[0];
     if (!file) return;
@@ -1397,19 +1397,19 @@
     reader.onload = function(e){
       addNewTab(file.name, e.target.result);
       scheduleRender();
-      setStatus('Impor berhasil: "' + file.name + '" (tab baru dibuat)');
+      setStatus('Import successful: "' + file.name + '" (new tab created)');
     };
     reader.onerror = function(){
-      setStatus("Gagal mengimpor file.");
+      setStatus("Failed to import file.");
     };
     reader.readAsText(file, "UTF-8");
     fileInput.value = "";
   });
 
-  /* ---- Impor Folder: pilih folder, semua file .md/.markdown/.txt di dalamnya
-         (termasuk subfolder) otomatis dibuka sebagai tab proyek baru,
-         dikelompokkan dalam satu folder tab sesuai nama folder yang dipilih.
-         File dengan tipe lain (gambar, kode, dst.) diabaikan begitu saja. ---- */
+  /* ---- Import Folder: pick a folder, all .md/.markdown/.txt files inside it
+         (including subfolders) are automatically opened as new project tabs,
+         grouped into a tab folder matching the selected folder's name.
+         Files of other types (images, code, etc.) are simply ignored. ---- */
   var folderInput = document.getElementById("folderInput");
   var IMPORTABLE_EXT = /\.(md|markdown|txt)$/i;
 
@@ -1420,7 +1420,7 @@
 
     var matched = allFiles.filter(function(f){ return IMPORTABLE_EXT.test(f.name); });
     if (!matched.length){
-      setStatus("Tidak ada file .md / .txt yang terdeteksi di folder itu.");
+      setStatus("No .md / .txt files were detected in that folder.");
       return;
     }
 
@@ -1437,7 +1437,7 @@
         if (done + failed === matched.length){
           renderTabs();
           scheduleRender();
-          setStatus('Impor folder "' + rootFolder + '" selesai: ' + done + " file dibuka" + (failed ? ", " + failed + " gagal" : "") + ".");
+          setStatus('Import of folder "' + rootFolder + '" complete: ' + done + " file(s) opened" + (failed ? ", " + failed + " failed" : "") + ".");
         }
       };
       reader.onerror = function(){
@@ -1445,7 +1445,7 @@
         if (done + failed === matched.length){
           renderTabs();
           scheduleRender();
-          setStatus('Impor folder "' + rootFolder + '" selesai: ' + done + " file dibuka" + (failed ? ", " + failed + " gagal" : "") + ".");
+          setStatus('Import of folder "' + rootFolder + '" complete: ' + done + " file(s) opened" + (failed ? ", " + failed + " failed" : "") + ".");
         }
       };
       reader.readAsText(file, "UTF-8");
@@ -1472,13 +1472,13 @@
     filenameInput.value = name;
     var tab = getActiveTab();
     if (tab){ tab.filename = name; tab.dirty = false; renderTabs(); }
-    setStatus('Disimpan sebagai "' + name + '"');
+    setStatus('Saved as "' + name + '"');
   }
 
   function exportTxt(){
     var name = (filenameInput.value.trim().replace(/\.\w+$/, "") || "README") + ".txt";
     download(name, "text/plain;charset=utf-8", editor.value);
-    setStatus('Diekspor sebagai teks: "' + name + '"');
+    setStatus('Exported as plain text: "' + name + '"');
   }
 
   var EXPORT_COPY_SCRIPT =
@@ -1512,9 +1512,9 @@
     renderPreview();
     var tab = getActiveTab();
     var prevTitle = document.title;
-    var pdfName = ((tab ? tab.filename : "") || "dokumen").replace(/\.[^.]+$/, "") || "dokumen";
+    var pdfName = ((tab ? tab.filename : "") || "document").replace(/\.[^.]+$/, "") || "document";
     document.title = pdfName;
-    setStatus('Membuka dialog cetak — pilih "Simpan sebagai PDF" pada tujuan/printer.');
+    setStatus('Opening the print dialog — choose "Save as PDF" as the destination/printer.');
     function restoreTitle(){
       document.title = prevTitle;
       window.removeEventListener("afterprint", restoreTitle);
@@ -1532,10 +1532,10 @@
       "</title>\n<style>\n" + document.getElementById("exportStyle").textContent + "\n</style>\n</head>\n<body>\n<div style=\"max-width:1100px;margin:40px auto;padding:0 24px;\">\n<article class=\"markdown-body\">\n" +
       bodyHtml + "\n</article>\n</div>\n<script>\n" + EXPORT_COPY_SCRIPT + "\n</script>\n</body>\n</html>\n";
     download(name, "text/html;charset=utf-8", fullHtml);
-    setStatus('Diekspor sebagai halaman HTML: "' + name + '"');
+    setStatus('Exported as an HTML page: "' + name + '"');
   }
 
-  /* ---- Flyout Impor/Ekspor (dipicu tombol gerigi di sidebar) ---- */
+  /* ---- Import/Export flyout (triggered by the gear button in the sidebar) ---- */
   var sidebarSettingsBtn = document.getElementById("sidebarSettingsBtn");
   var settingsFlyout = document.getElementById("settingsFlyout");
   var settingsImportBtn = document.getElementById("settingsImportBtn");
@@ -1586,13 +1586,13 @@
     }
   });
 
-  /* Gaya markdown-body yang disematkan ulang ke file HTML hasil ekspor,
-     supaya file hasil ekspor tetap berdiri sendiri (tanpa aset eksternal).
-     Ini adalah salinan dari bagian relevan style.css -- disimpan terpisah
-     di sini karena file HTML hasil ekspor tidak boleh bergantung pada
-     style.css eksternal (harus mandiri / bisa dibuka standalone). */
+  /* markdown-body styles re-embedded into the exported HTML file,
+     so the exported file remains self-contained (no external assets).
+     This is a copy of the relevant part of style.css -- kept separate
+     here because the exported HTML file must not depend on the external
+     style.css (it must be self-contained / openable standalone). */
 var EXPORT_CSS =
-"body{background:var(--bg);color:var(--fg);font-family:'Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif;}\n:root{\n  --bg:#ffffff;\n  --bg-secondary:#f6f8fa;\n  --fg:#1f2328;\n  --fg-muted:#59636e;\n  --border:#d1d9e0;\n  --accent:#0969da;\n  --code-bg:#eff1f3;\n  --btn-bg:#f6f8fa;\n  --btn-bg-hover:#eef1f3;\n  --btn-border:#d1d9e0;\n  --btn-active-bg:#0969da;\n  --btn-active-fg:#ffffff;\n  --shadow:0 1px 0 rgba(31,35,40,.04);\n  --table-stripe:#f6f8fa;\n  --blockquote-border:#d1d9e0;\n  --danger:#cf222e;\n  --scrollbar:#d1d9e0;\n  --tok-comment:#6e7781;\n  --tok-string:#0a3069;\n  --tok-number:#0550ae;\n  --tok-keyword:#cf222e;\n  --tok-boolean:#0550ae;\n  --tok-function:#8250df;\n  --tok-class:#953800;\n  --tok-tag:#116329;\n  --tok-attr:#0550ae;\n  --tok-property:#0550ae;\n  --tok-key:#0a3069;\n  --tok-variable:#953800;\n  font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Noto Sans\", Helvetica, Arial, sans-serif;\n}\n[data-theme=\"dark\"]{\n  --bg:#0d1117;\n  --bg-secondary:#161b22;\n  --fg:#e6edf3;\n  --fg-muted:#8b949e;\n  --border:#30363d;\n  --accent:#4493f8;\n  --code-bg:#1e2530;\n  --btn-bg:#21262d;\n  --btn-bg-hover:#30363d;\n  --btn-border:#30363d;\n  --btn-active-bg:#1f6feb;\n  --btn-active-fg:#ffffff;\n  --shadow:0 1px 0 rgba(0,0,0,.2);\n  --table-stripe:#161b22;\n  --blockquote-border:#3b434b;\n  --scrollbar:#30363d;\n  --tok-comment:#6a9955;\n  --tok-string:#ce9178;\n  --tok-number:#b5cea8;\n  --tok-keyword:#569cd6;\n  --tok-boolean:#569cd6;\n  --tok-function:#dcdcaa;\n  --tok-class:#4ec9b0;\n  --tok-tag:#569cd6;\n  --tok-attr:#9cdcfe;\n  --tok-property:#9cdcfe;\n  --tok-key:#9cdcfe;\n  --tok-variable:#9cdcfe;\n}\n/* ================= Markdown preview styling (GitHub-like) ================= */\n.markdown-body{\n  font-size:16px;\n  line-height:1.6;\n  word-wrap:break-word;\n}\n.markdown-body > *:first-child{margin-top:0 !important;}\n.markdown-body > *:last-child{margin-bottom:0 !important;}\n.markdown-body h1,.markdown-body h2,.markdown-body h3,\n.markdown-body h4,.markdown-body h5,.markdown-body h6{\n  font-weight:600;\n  line-height:1.25;\n  margin-top:24px;\n  margin-bottom:16px;\n}\n.markdown-body h1{font-size:2em;padding-bottom:.3em;border-bottom:1px solid var(--border);}\n.markdown-body h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid var(--border);}\n.markdown-body h3{font-size:1.25em;}\n.markdown-body h4{font-size:1em;}\n.markdown-body h5{font-size:.875em;}\n.markdown-body h6{font-size:.85em;color:var(--fg-muted);}\n.markdown-body p{margin-top:0;margin-bottom:16px;}\n.markdown-body a{color:var(--accent);text-decoration:none;}\n.markdown-body a:hover{text-decoration:underline;}\n.markdown-body ul,.markdown-body ol{margin-top:0;margin-bottom:16px;padding-left:2em;}\n.markdown-body li{margin-top:.25em;}\n.markdown-body li + li{margin-top:.25em;}\n.markdown-body li > p{margin-bottom:0;}\n.markdown-body .task-list-item{list-style:none;margin-left:-1.4em;}\n.markdown-body .task-list-item input{margin-right:.5em;}\n.markdown-body blockquote{\n  margin:0 0 16px;\n  padding:0 1em;\n  color:var(--fg-muted);\n  border-left:.25em solid var(--blockquote-border);\n}\n.markdown-body blockquote > *:last-child{margin-bottom:0;}\n.markdown-body code{\n  font-family:ui-monospace, SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace;\n  background:var(--code-bg);\n  padding:.2em .4em;\n  border-radius:6px;\n  font-size:85%;\n}\n.code-block{\n  position:relative;\n  margin-bottom:16px;\n}\n.markdown-body pre{\n  background:var(--code-bg);\n  padding:34px 16px 16px;\n  border-radius:6px;\n  overflow:auto;\n  margin-bottom:0;\n  line-height:1.45;\n}\n.markdown-body pre code{\n  background:none;\n  padding:0;\n  font-size:85%;\n  white-space:pre;\n}\n.code-toolbar{\n  position:absolute;\n  top:6px;\n  right:8px;\n  left:8px;\n  display:flex;\n  align-items:center;\n  justify-content:flex-end;\n  gap:8px;\n  pointer-events:none;\n  z-index:1;\n}\n.code-toolbar > *{pointer-events:auto;}\n.code-toolbar .lang-tag{\n  font-size:11px;\n  color:var(--fg-muted);\n  text-transform:uppercase;\n  letter-spacing:.04em;\n  margin-right:auto;\n}\n.copy-btn{\n  font-family:inherit;\n  padding:4px;\n  border-radius:5px;\n  border:none;\n  background:transparent;\n  color:var(--fg-muted);\n  cursor:pointer;\n  display:inline-flex;\n  align-items:center;\n  justify-content:center;\n  opacity:.85;\n  transition:background .1s ease, color .1s ease;\n}\n.copy-btn:hover{background:var(--btn-bg-hover);color:var(--fg);opacity:1;}\n.copy-btn svg{width:14px;height:14px;display:block;}\n.copy-btn.copied{color:#1a7f37;}\n[data-theme=\"dark\"] .copy-btn.copied{color:#3fb950;}\n\n/* ---- Syntax highlighting token warna (gaya ala VS Code) ---- */\n.tok-comment{color:var(--tok-comment);font-style:italic;}\n.tok-string{color:var(--tok-string);}\n.tok-number{color:var(--tok-number);}\n.tok-keyword{color:var(--tok-keyword);font-weight:600;}\n.tok-boolean{color:var(--tok-boolean);}\n.tok-function{color:var(--tok-function);}\n.tok-class{color:var(--tok-class);}\n.tok-tag{color:var(--tok-tag);}\n.tok-attr{color:var(--tok-attr);}\n.tok-property{color:var(--tok-property);}\n.tok-key{color:var(--tok-key);}\n.tok-variable{color:var(--tok-variable);}\n.markdown-body hr{\n  height:.25em;\n  padding:0;\n  margin:24px 0;\n  background:var(--border);\n  border:0;\n}\n.markdown-body table{\n  border-collapse:collapse;\n  display:block;\n  width:max-content;\n  max-width:100%;\n  overflow:auto;\n  margin-bottom:16px;\n}\n.markdown-body table th{font-weight:600;background:var(--bg-secondary);}\n.markdown-body table th,.markdown-body table td{\n  border:1px solid var(--border);\n  padding:6px 13px;\n}\n.markdown-body table tr:nth-child(2n){background:var(--table-stripe);}\n.markdown-body img{max-width:100%;box-sizing:content-box;background:var(--bg);border-radius:4px;}\n.markdown-body h1 .anchor,.markdown-body h2 .anchor{display:none;}\n.markdown-body kbd{\n  background:var(--bg-secondary);\n  border:1px solid var(--border);\n  border-bottom-width:2px;\n  border-radius:6px;\n  padding:2px 5px;\n  font-size:85%;\n  font-family:ui-monospace,monospace;\n}\n.markdown-body del{color:var(--fg-muted);}\n.markdown-body .empty-hint{color:var(--fg-muted);font-style:italic;}\n";
+"body{background:var(--bg);color:var(--fg);font-family:'Atkinson Hyperlegible',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif;}\n:root{\n  --bg:#ffffff;\n  --bg-secondary:#f6f8fa;\n  --fg:#1f2328;\n  --fg-muted:#59636e;\n  --border:#d1d9e0;\n  --accent:#0969da;\n  --code-bg:#eff1f3;\n  --btn-bg:#f6f8fa;\n  --btn-bg-hover:#eef1f3;\n  --btn-border:#d1d9e0;\n  --btn-active-bg:#0969da;\n  --btn-active-fg:#ffffff;\n  --shadow:0 1px 0 rgba(31,35,40,.04);\n  --table-stripe:#f6f8fa;\n  --blockquote-border:#d1d9e0;\n  --danger:#cf222e;\n  --scrollbar:#d1d9e0;\n  --tok-comment:#6e7781;\n  --tok-string:#0a3069;\n  --tok-number:#0550ae;\n  --tok-keyword:#cf222e;\n  --tok-boolean:#0550ae;\n  --tok-function:#8250df;\n  --tok-class:#953800;\n  --tok-tag:#116329;\n  --tok-attr:#0550ae;\n  --tok-property:#0550ae;\n  --tok-key:#0a3069;\n  --tok-variable:#953800;\n  font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Noto Sans\", Helvetica, Arial, sans-serif;\n}\n[data-theme=\"dark\"]{\n  --bg:#0d1117;\n  --bg-secondary:#161b22;\n  --fg:#e6edf3;\n  --fg-muted:#8b949e;\n  --border:#30363d;\n  --accent:#4493f8;\n  --code-bg:#1e2530;\n  --btn-bg:#21262d;\n  --btn-bg-hover:#30363d;\n  --btn-border:#30363d;\n  --btn-active-bg:#1f6feb;\n  --btn-active-fg:#ffffff;\n  --shadow:0 1px 0 rgba(0,0,0,.2);\n  --table-stripe:#161b22;\n  --blockquote-border:#3b434b;\n  --scrollbar:#30363d;\n  --tok-comment:#6a9955;\n  --tok-string:#ce9178;\n  --tok-number:#b5cea8;\n  --tok-keyword:#569cd6;\n  --tok-boolean:#569cd6;\n  --tok-function:#dcdcaa;\n  --tok-class:#4ec9b0;\n  --tok-tag:#569cd6;\n  --tok-attr:#9cdcfe;\n  --tok-property:#9cdcfe;\n  --tok-key:#9cdcfe;\n  --tok-variable:#9cdcfe;\n}\n/* ================= Markdown preview styling (GitHub-like) ================= */\n.markdown-body{\n  font-size:16px;\n  line-height:1.6;\n  word-wrap:break-word;\n}\n.markdown-body > *:first-child{margin-top:0 !important;}\n.markdown-body > *:last-child{margin-bottom:0 !important;}\n.markdown-body h1,.markdown-body h2,.markdown-body h3,\n.markdown-body h4,.markdown-body h5,.markdown-body h6{\n  font-weight:600;\n  line-height:1.25;\n  margin-top:24px;\n  margin-bottom:16px;\n}\n.markdown-body h1{font-size:2em;padding-bottom:.3em;border-bottom:1px solid var(--border);}\n.markdown-body h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid var(--border);}\n.markdown-body h3{font-size:1.25em;}\n.markdown-body h4{font-size:1em;}\n.markdown-body h5{font-size:.875em;}\n.markdown-body h6{font-size:.85em;color:var(--fg-muted);}\n.markdown-body p{margin-top:0;margin-bottom:16px;}\n.markdown-body a{color:var(--accent);text-decoration:none;}\n.markdown-body a:hover{text-decoration:underline;}\n.markdown-body ul,.markdown-body ol{margin-top:0;margin-bottom:16px;padding-left:2em;}\n.markdown-body li{margin-top:.25em;}\n.markdown-body li + li{margin-top:.25em;}\n.markdown-body li > p{margin-bottom:0;}\n.markdown-body .task-list-item{list-style:none;margin-left:-1.4em;}\n.markdown-body .task-list-item input{margin-right:.5em;}\n.markdown-body blockquote{\n  margin:0 0 16px;\n  padding:0 1em;\n  color:var(--fg-muted);\n  border-left:.25em solid var(--blockquote-border);\n}\n.markdown-body blockquote > *:last-child{margin-bottom:0;}\n.markdown-body code{\n  font-family:ui-monospace, SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace;\n  background:var(--code-bg);\n  padding:.2em .4em;\n  border-radius:6px;\n  font-size:85%;\n}\n.code-block{\n  position:relative;\n  margin-bottom:16px;\n}\n.markdown-body pre{\n  background:var(--code-bg);\n  padding:34px 16px 16px;\n  border-radius:6px;\n  overflow:auto;\n  margin-bottom:0;\n  line-height:1.45;\n}\n.markdown-body pre code{\n  background:none;\n  padding:0;\n  font-size:85%;\n  white-space:pre;\n}\n.code-toolbar{\n  position:absolute;\n  top:6px;\n  right:8px;\n  left:8px;\n  display:flex;\n  align-items:center;\n  justify-content:flex-end;\n  gap:8px;\n  pointer-events:none;\n  z-index:1;\n}\n.code-toolbar > *{pointer-events:auto;}\n.code-toolbar .lang-tag{\n  font-size:11px;\n  color:var(--fg-muted);\n  text-transform:uppercase;\n  letter-spacing:.04em;\n  margin-right:auto;\n}\n.copy-btn{\n  font-family:inherit;\n  padding:4px;\n  border-radius:5px;\n  border:none;\n  background:transparent;\n  color:var(--fg-muted);\n  cursor:pointer;\n  display:inline-flex;\n  align-items:center;\n  justify-content:center;\n  opacity:.85;\n  transition:background .1s ease, color .1s ease;\n}\n.copy-btn:hover{background:var(--btn-bg-hover);color:var(--fg);opacity:1;}\n.copy-btn svg{width:14px;height:14px;display:block;}\n.copy-btn.copied{color:#1a7f37;}\n[data-theme=\"dark\"] .copy-btn.copied{color:#3fb950;}\n\n/* ---- Syntax highlighting token colors (VS Code style) ---- */\n.tok-comment{color:var(--tok-comment);font-style:italic;}\n.tok-string{color:var(--tok-string);}\n.tok-number{color:var(--tok-number);}\n.tok-keyword{color:var(--tok-keyword);font-weight:600;}\n.tok-boolean{color:var(--tok-boolean);}\n.tok-function{color:var(--tok-function);}\n.tok-class{color:var(--tok-class);}\n.tok-tag{color:var(--tok-tag);}\n.tok-attr{color:var(--tok-attr);}\n.tok-property{color:var(--tok-property);}\n.tok-key{color:var(--tok-key);}\n.tok-variable{color:var(--tok-variable);}\n.markdown-body hr{\n  height:.25em;\n  padding:0;\n  margin:24px 0;\n  background:var(--border);\n  border:0;\n}\n.markdown-body table{\n  border-collapse:collapse;\n  display:block;\n  width:max-content;\n  max-width:100%;\n  overflow:auto;\n  margin-bottom:16px;\n}\n.markdown-body table th{font-weight:600;background:var(--bg-secondary);}\n.markdown-body table th,.markdown-body table td{\n  border:1px solid var(--border);\n  padding:6px 13px;\n}\n.markdown-body table tr:nth-child(2n){background:var(--table-stripe);}\n.markdown-body img{max-width:100%;box-sizing:content-box;background:var(--bg);border-radius:4px;}\n.markdown-body h1 .anchor,.markdown-body h2 .anchor{display:none;}\n.markdown-body kbd{\n  background:var(--bg-secondary);\n  border:1px solid var(--border);\n  border-bottom-width:2px;\n  border-radius:6px;\n  padding:2px 5px;\n  font-size:85%;\n  font-family:ui-monospace,monospace;\n}\n.markdown-body del{color:var(--fg-muted);}\n.markdown-body .empty-hint{color:var(--fg-muted);font-style:italic;}\n";
   var exportStyleTag = document.createElement("script");
   exportStyleTag.type = "text/plain";
   exportStyleTag.id = "exportStyle";
@@ -1600,10 +1600,10 @@ var EXPORT_CSS =
   document.head.appendChild(exportStyleTag);
 
   /* ============================================================
-     3) FITUR TAMBAHAN: posisi kursor, cari & ganti, command palette
+     3) ADDITIONAL FEATURES: cursor position, find & replace, command palette
      ============================================================ */
 
-  /* ---- Posisi baris:kolom di status bar (ala VSCode) ---- */
+  /* ---- Line:column position in the status bar (VSCode style) ---- */
   function updateCursorPos(){
     if (!cursorPosEl) return;
     var pos = editor.selectionStart;
@@ -1611,13 +1611,13 @@ var EXPORT_CSS =
     var linesBefore = textBefore.split("\n");
     var line = linesBefore.length;
     var col = linesBefore[linesBefore.length - 1].length + 1;
-    cursorPosEl.textContent = "Baris " + line + ", Kol " + col;
+    cursorPosEl.textContent = "Line " + line + ", Col " + col;
   }
   ["input", "keyup", "click", "select"].forEach(function(evt){
     editor.addEventListener(evt, updateCursorPos);
   });
 
-  /* ---- Cari & Ganti ---- */
+  /* ---- Find & Replace ---- */
   function closeFindBar(){
     findBar.classList.remove("open");
     sidebarSearchBtn.classList.remove("active");
@@ -1654,7 +1654,7 @@ var EXPORT_CSS =
   function updateFindCount(){
     var needle = findInput.value;
     if (!needle){ findCount.textContent = ""; return; }
-    findCount.textContent = countMatches(needle) + " hasil";
+    findCount.textContent = countMatches(needle) + " results";
   }
   findInput.addEventListener("input", updateFindCount);
 
@@ -1672,7 +1672,7 @@ var EXPORT_CSS =
       if (idx === -1) idx = text.lastIndexOf(target);
     }
     if (idx === -1){
-      setStatus('Tidak ditemukan: "' + needle + '"');
+      setStatus('Not found: "' + needle + '"');
       return;
     }
     editor.focus();
@@ -1704,7 +1704,7 @@ var EXPORT_CSS =
       editor.value = val.slice(0, start) + replaceInput.value + val.slice(end);
       editor.setSelectionRange(start, start + replaceInput.value.length);
       scheduleRender();
-      setStatus("1 kecocokan diganti.");
+      setStatus("1 match replaced.");
     }
     findFrom(editor.selectionEnd, true);
   }
@@ -1728,7 +1728,7 @@ var EXPORT_CSS =
       editor.value = pieces.join("");
       scheduleRender();
     }
-    setStatus(count + " kecocokan diganti.");
+    setStatus(count + " match(es) replaced.");
     updateFindCount();
   }
   replaceOneBtn.addEventListener("click", replaceOne);
@@ -1736,30 +1736,30 @@ var EXPORT_CSS =
 
   /* ---- Command Palette ---- */
   var paletteCommands = [
-    { label: "Baru: Tab proyek baru", hint: "New Tab", run: function(){ newTabBtn.click(); } },
-    { label: "Baru: dari template README", hint: "Template", run: function(){ newTabFromTemplate("readme"); } },
-    { label: "Baru: dari template CV", hint: "Template", run: function(){ newTabFromTemplate("cv"); } },
-    { label: "Baru: dari template Catatan Rapat", hint: "Template", run: function(){ newTabFromTemplate("meeting"); } },
-    { label: "Impor file .md / .txt", hint: "Import", run: function(){ fileInput.click(); } },
-    { label: "Impor folder .md / .txt", hint: "Import", run: function(){ folderInput.click(); } },
-    { label: "Ekspor sebagai .md", hint: "Ctrl+S", run: exportMd },
-    { label: "Ekspor sebagai .txt", hint: "Export", run: exportTxt },
-    { label: "Ekspor sebagai .html", hint: "Export", run: exportHtml },
-    { label: "Ekspor sebagai .pdf", hint: "Export", run: exportPdf },
-    { label: "Format: Tebal (Bold)", hint: "Ctrl+B", run: function(){ wrapSelection("**", "**", "teks tebal"); } },
-    { label: "Format: Miring (Italic)", hint: "Ctrl+I", run: function(){ wrapSelection("*", "*", "teks miring"); } },
-    { label: "Sisipkan tautan (Link)", hint: "Ctrl+L", run: insertLink },
-    { label: "Sisipkan contoh diagram Mermaid", hint: "Diagram", run: insertMermaidSample },
-    { label: "Ganti tema terang / gelap", hint: "Theme", run: function(){ themeToggle.click(); } },
+    { label: "New: New project tab", hint: "New Tab", run: function(){ newTabBtn.click(); } },
+    { label: "New: from README template", hint: "Template", run: function(){ newTabFromTemplate("readme"); } },
+    { label: "New: from CV template", hint: "Template", run: function(){ newTabFromTemplate("cv"); } },
+    { label: "New: from Meeting Notes template", hint: "Template", run: function(){ newTabFromTemplate("meeting"); } },
+    { label: "Import .md / .txt file", hint: "Import", run: function(){ fileInput.click(); } },
+    { label: "Import .md / .txt folder", hint: "Import", run: function(){ folderInput.click(); } },
+    { label: "Export as .md", hint: "Ctrl+S", run: exportMd },
+    { label: "Export as .txt", hint: "Export", run: exportTxt },
+    { label: "Export as .html", hint: "Export", run: exportHtml },
+    { label: "Export as .pdf", hint: "Export", run: exportPdf },
+    { label: "Format: Bold", hint: "Ctrl+B", run: function(){ wrapSelection("**", "**", "bold text"); } },
+    { label: "Format: Italic", hint: "Ctrl+I", run: function(){ wrapSelection("*", "*", "italic text"); } },
+    { label: "Insert link", hint: "Ctrl+L", run: insertLink },
+    { label: "Insert Mermaid diagram sample", hint: "Diagram", run: insertMermaidSample },
+    { label: "Toggle light / dark theme", hint: "Theme", run: function(){ themeToggle.click(); } },
     { label: "Mode: Editor", hint: "View", run: function(){ setMode("edit"); } },
     { label: "Mode: Review", hint: "View", run: function(){ setMode("preview"); } },
     { label: "Mode: Split", hint: "View", run: function(){ setMode("split"); } },
-    { label: "Cari & Ganti", hint: "Find", run: openFindBar },
-    { label: "Tampilkan daftar tab", hint: "Files", run: openFilesFlyout },
-    { label: "Pindahkan tab aktif ke folder...", hint: "Folder", run: function(){ var t = getActiveTab(); if (t) promptSetFolder(t); } },
-    { label: "Tampilkan daftar isi (outline)", hint: "Outline", run: openOutlineFlyout },
-    { label: "Simpan checkpoint riwayat versi", hint: "History", run: manualCheckpoint },
-    { label: "Buka panel Impor/Ekspor", hint: "Settings", run: openSettingsFlyout }
+    { label: "Find & Replace", hint: "Find", run: openFindBar },
+    { label: "Show tab list", hint: "Files", run: openFilesFlyout },
+    { label: "Move active tab to folder...", hint: "Folder", run: function(){ var t = getActiveTab(); if (t) promptSetFolder(t); } },
+    { label: "Show table of contents (outline)", hint: "Outline", run: openOutlineFlyout },
+    { label: "Save version history checkpoint", hint: "History", run: manualCheckpoint },
+    { label: "Open Import/Export panel", hint: "Settings", run: openSettingsFlyout }
   ];
   var paletteSelected = 0;
   function renderPalette(filtered){
@@ -1767,7 +1767,7 @@ var EXPORT_CSS =
     if (filtered.length === 0){
       var empty = document.createElement("div");
       empty.className = "palette-empty";
-      empty.textContent = "Tidak ada perintah yang cocok.";
+      empty.textContent = "No matching commands.";
       paletteList.appendChild(empty);
       return;
     }
@@ -1837,7 +1837,7 @@ var EXPORT_CSS =
     if (e.target === paletteOverlay) closePalette();
   });
 
-  /* ---- Shortcut global: Ctrl/Cmd+K palette, Ctrl/Cmd+F cari, Ctrl/Cmd+S simpan ---- */
+  /* ---- Global shortcuts: Ctrl/Cmd+K palette, Ctrl/Cmd+F find, Ctrl/Cmd+S save ---- */
   document.addEventListener("keydown", function(e){
     var mod = e.ctrlKey || e.metaKey;
     if (mod && e.key.toLowerCase() === "k"){
@@ -1873,7 +1873,7 @@ var EXPORT_CSS =
     } else if (startAction){
       window.history.replaceState(null, "", window.location.pathname);
     }
-  } catch (e) { /* abaikan */ }
+  } catch (e) { /* ignore */ }
 
   setInterval(autosaveNow, AUTOSAVE_INTERVAL_MS);
   window.addEventListener("beforeunload", autosaveNow);
@@ -1882,11 +1882,11 @@ var EXPORT_CSS =
   });
 })();
 
-/* ---- PWA: registrasi service worker ---- */
+/* ---- PWA: service worker registration ---- */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function(){
     navigator.serviceWorker.register("sw.js").catch(function(err){
-      console.warn("Registrasi service worker gagal:", err);
+      console.warn("Service worker registration failed:", err);
     });
   });
 }

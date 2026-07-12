@@ -1,16 +1,16 @@
-// Service worker Wolio Word — network-first untuk file inti (HTML/CSS/JS)
-// biar update selalu kepakai, cache-first untuk font/icon yang jarang berubah.
-// Versi cache: WAJIB naikkan angka ini tiap kali file inti berubah, biar user
-// otomatis dapat update (bukan versi lama yang nyangkut di cache selamanya).
+// Wolio Word service worker — network-first for core files (HTML/CSS/JS)
+// so updates always take effect, cache-first for fonts/icons that rarely change.
+// Cache version: MUST bump this number every time a core file changes, so users
+// automatically get the update (instead of an old version stuck in cache forever).
 const CACHE_NAME = "wolio-word-v6";
 
-// File yang isinya SERING berubah (kode aplikasi) -> network-first
+// Files whose content changes OFTEN (app code) -> network-first
 const NETWORK_FIRST = [
   "/", "/index.html", "/app.html", "/style.css", "/script.js", "/manifest.json"
 ];
 
-// File inti yang WAJIB ada saat build ini dibuat. Kalau salah satu gagal
-// di-fetch, instalasi SW gagal total -- makanya cuma isi file yang pasti ada.
+// Core files that MUST exist when this build is created. If any of them
+// fails to fetch, the SW install fails entirely -- so only include files that are guaranteed to exist.
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -62,8 +62,8 @@ function isNetworkFirst(request) {
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
 
-  // File inti (HTML/CSS/JS): coba jaringan dulu supaya update selalu
-  // kepakai. Kalau offline / gagal, baru jatuh ke cache lama.
+  // Core files (HTML/CSS/JS): try the network first so updates always
+  // take effect. If offline / failed, fall back to the old cache.
   if (isNetworkFirst(event.request)) {
     event.respondWith(
       fetch(event.request).then(function (response) {
@@ -83,7 +83,7 @@ self.addEventListener("fetch", function (event) {
     return;
   }
 
-  // File statis (font, ikon, dll): cache-first, hemat kuota & cepat.
+  // Static files (fonts, icons, etc.): cache-first, saves quota & is fast.
   event.respondWith(
     caches.match(event.request).then(function (cached) {
       if (cached) return cached;

@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wolio Word — Editor Markdown Offline</title>
-<meta name="description" content="Membuat markdown menjadi mudah dengan Wolio Word. Editor Markdown gaya VSCode yang berjalan 100% offline di browser.">
+<title>Wolio Word — Offline Markdown Editor</title>
+<meta name="description" content="Wolio Word makes writing markdown easy. A VSCode-style Markdown editor that runs 100% offline in the browser.">
 <meta name="theme-color" content="#ffffff">
 
 <script>
-  // Terapkan tema tersimpan lebih awal (sebelum body dirender) biar gak ada efek kedip,
-  // dan biar mode gelap/terang selalu selaras dengan halaman app.html.
+  // Apply the saved theme early (before the body renders) so there is no flash effect,
+  // and so the dark/light mode always stays consistent with the app.html page.
   (function(){
     try {
       var t = window.localStorage.getItem("wolioWord.theme.v1");
@@ -24,11 +24,11 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Wolio Word — Editor Markdown Offline">
-<meta property="og:description" content="Membuat markdown menjadi mudah dengan Wolio Word.">
+<meta property="og:title" content="Wolio Word — Offline Markdown Editor">
+<meta property="og:description" content="Wolio Word makes writing markdown easy.">
 <meta property="og:image" content="icons/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Wolio Word — Editor Markdown Offline">
+<meta name="twitter:title" content="Wolio Word — Offline Markdown Editor">
 <meta name="twitter:image" content="icons/og-image.png">
 
 <style>
@@ -100,7 +100,7 @@
     color:var(--fg-strong);
   }
 
-  /* Transisi halus saat halaman dibuka */
+  /* Smooth transition when the page opens */
   body{
     opacity:0;
     transition:opacity .35s ease, background-color .25s ease, color .25s ease;
@@ -268,11 +268,11 @@
     <div class="hero-actions">
       <button type="button" class="btn btn-primary" id="btnNewProject">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11"/></svg>
-        Proyek baru
+        New project
       </button>
       <button type="button" class="btn btn-outline" id="btnImportProject">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3.5h4l1.2 1.5h6.3a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-7.5a.5.5 0 0 1 .5-.5Z"/></svg>
-        Impor proyek
+        Import project
       </button>
       <input type="file" id="importFileInput" accept=".md,.markdown,.txt,text/markdown,text/plain,text/x-markdown" style="display:none">
       <a class="btn btn-outline btn-support" href="https://github.com/alisastro103-cmd/Wolio-word" target="_blank" rel="noopener">
@@ -318,7 +318,7 @@
   });
 
   document.getElementById("btnImportProject").addEventListener("click", function(){
-    importFileInput.value = ""; // reset biar file yang sama bisa dipilih lagi
+    importFileInput.value = ""; // reset so the same file can be selected again
     importFileInput.click();
   });
 
@@ -332,7 +332,7 @@
     reader.readAsText(file, "UTF-8");
   });
 
-  /* ---- Efek ketik pada tagline, dengan kursor huruf yang berkedip ---- */
+  /* ---- Typing effect on the tagline, with a blinking text cursor ---- */
   function typeWriter(el, text, speed){
     var i = 0;
     el.textContent = "";
@@ -352,15 +352,15 @@
   window.addEventListener("DOMContentLoaded", function(){
     document.body.classList.add("loaded");
     var taglines = [
-      "Membuat markdown menjadi mudah dengan Wolio Word. Ringan, cepat, dan 100% offline di browser kamu — tanpa install, tanpa akun, tanpa ribet.",
-      "Nulis Markdown secepat mikir. Wolio Word jalan penuh di browser, offline total, tanpa iklan, tanpa akun ribet.",
-      "Editor Markdown ala VS Code, tapi muat di saku kamu. Buka, tulis, simpan — semuanya offline.",
-      "Dari draft cepat sampai dokumentasi rapi, Wolio Word bantu kamu nulis Markdown tanpa drama.",
-      "Gak perlu internet, gak perlu login. Wolio Word siap dipakai kapan aja, di mana aja, di HP atau laptop kamu.",
-      "Markdown jadi menyenangkan: preview instan, tema gelap/terang, dan semuanya tersimpan otomatis.",
-      "Satu tab browser, semua yang kamu butuh buat nulis Markdown rapi dan cepat.",
-      "Wolio Word: ringan kayak notepad, lengkap kayak editor kode. Semuanya berjalan di browser kamu sendiri.",
-      "Ide muncul kapan aja — Wolio Word siap nampung, tanpa loading, tanpa server, tanpa drama."
+      "Wolio Word makes writing markdown easy. Light, fast, and 100% offline in your browser — no install, no account, no hassle.",
+      "Write Markdown as fast as you think. Wolio Word runs entirely in the browser, fully offline, no ads, no annoying accounts.",
+      "A VS Code-style Markdown editor that fits in your pocket. Open, write, save — all offline.",
+      "From quick drafts to polished docs, Wolio Word helps you write Markdown without the drama.",
+      "No internet needed, no login required. Wolio Word is ready anytime, anywhere, on your phone or laptop.",
+      "Markdown made fun: instant preview, dark/light theme, and everything saves automatically.",
+      "One browser tab, everything you need to write clean, fast Markdown.",
+      "Wolio Word: light as a notepad, complete as a code editor. Everything runs in your own browser.",
+      "Ideas can strike anytime — Wolio Word is ready to catch them, no loading, no server, no drama."
     ];
     var tagline = taglines[Math.floor(Math.random() * taglines.length)];
     typeWriter(document.getElementById("heroTagline"), tagline, 24);

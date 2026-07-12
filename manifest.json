@@ -2,7 +2,7 @@
   "id": "/app.html",
   "name": "Wolio Word",
   "short_name": "Wolio Word",
-  "description": "Editor Markdown gaya VSCode yang berjalan 100% offline di browser.",
+  "description": "A VSCode-style Markdown editor that runs 100% offline in the browser.",
   "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
@@ -12,7 +12,7 @@
   "categories": ["productivity", "utilities"],
   "background_color": "#0d1117",
   "theme_color": "#0d1117",
-  "lang": "id",
+  "lang": "en",
   "icons": [
     {
       "src": "icons/icon-192.png",

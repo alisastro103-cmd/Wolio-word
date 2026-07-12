@@ -103,11 +103,11 @@ body{
   display:flex;
   flex-direction:column;
   height:100vh;
-  height:100dvh; /* pakai dynamic viewport height di mobile, biar bagian bawah (footer/status) gak kepotong di belakang toolbar browser */
+  height:100dvh; /* use dynamic viewport height on mobile, so the bottom part (footer/status) doesn't get cut off behind the browser toolbar */
   overflow:hidden;
 }
 
-/* ---------- Tab bar (tab proyek, ala Chrome) ---------- */
+/* ---------- Tab bar (project tabs, Chrome-style) ---------- */
 .tabbar{
   display:flex;
   align-items:flex-end;
@@ -202,7 +202,7 @@ body{
 .tab-add:active{background:var(--btn-border);}
 .tab-add svg{width:13px;height:13px;display:block;}
 
-/* Saat tab lebih dari 4, tab memendek sedikit; sisanya tinggal di-scroll */
+/* When there are more than 4 tabs, tabs shrink slightly; the rest can be scrolled */
 .tabstrip.compact .tab{
   min-width:64px;
   max-width:130px;
@@ -211,7 +211,7 @@ body{
 }
 .tabstrip.compact .tab-label{ font-size:11px; }
 
-/* ---------- Pane resizer (seret untuk mengubah lebar editor/preview) ---------- */
+/* ---------- Pane resizer (drag to resize editor/preview width) ---------- */
 .pane-resizer{
   display:none;
   flex-shrink:0;
@@ -435,7 +435,7 @@ footer{
 
 #fileInput, #folderInput{display:none;}
 
-/* ---------- Activity bar (toolbar ikon di header) ---------- */
+/* ---------- Activity bar (icon toolbar in the header) ---------- */
 .activity-bar{
   flex:0 0 auto;
   display:flex;
@@ -459,7 +459,7 @@ footer{
 .activity-btn:hover{background:var(--btn-bg-hover);color:var(--fg);}
 .activity-btn.active{background:var(--btn-active-bg);color:var(--btn-active-fg);border-color:var(--btn-active-bg);}
 
-/* ---------- Flyout daftar tab (dipicu tombol Files di sidebar) ---------- */
+/* ---------- Tab list flyout (triggered by the Files button in the sidebar) ---------- */
 .files-flyout{
   position:absolute;
   top:100%;
@@ -566,7 +566,7 @@ footer{
 }
 .history-restore-btn:hover{background:var(--btn-bg-hover);}
 
-/* ---------- Flyout Impor/Ekspor (dipicu tombol gerigi di sidebar) ---------- */
+/* ---------- Import/Export flyout (triggered by the gear button in the sidebar) ---------- */
 .settings-flyout{
   position:absolute;
   top:100%;
@@ -619,7 +619,7 @@ footer{
 }
 .flyout-action:hover{background:var(--btn-bg-hover);}
 
-/* ---------- Bilah Cari & Ganti ---------- */
+/* ---------- Find & Replace bar ---------- */
 .find-bar{
   display:none;
   align-items:center;
@@ -644,7 +644,7 @@ footer{
 }
 .find-count{font-size:11px;color:var(--fg-muted);white-space:nowrap;min-width:34px;}
 
-/* ---------- Status bar tambahan ---------- */
+/* ---------- Additional status bar ---------- */
 .footer-right{display:flex;align-items:center;gap:14px;}
 #modeLabel{
   text-transform:uppercase;
@@ -826,7 +826,7 @@ footer{
 .copy-btn.copied{color:#1a7f37;}
 [data-theme="dark"] .copy-btn.copied{color:#3fb950;}
 
-/* ---- Syntax highlighting token warna (gaya ala VS Code) ---- */
+/* ---- Syntax highlighting token colors (VS Code style) ---- */
 .tok-comment{color:var(--tok-comment);font-style:italic;}
 .tok-string{color:var(--tok-string);}
 .tok-number{color:var(--tok-number);}
@@ -907,7 +907,7 @@ footer{
   #cursorPos{display:none;}
 }
 
-/* ---------- Cetak / Ekspor PDF (lewat dialog print browser) ---------- */
+/* ---------- Print / Export PDF (via the browser print dialog) ---------- */
 @media print{
   header, .tabbar, footer, #paneEdit, .pane-resizer,
   .find-bar, .files-flyout, .settings-flyout, .palette-overlay{

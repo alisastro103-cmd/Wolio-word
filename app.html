@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wolio Word</title>
 
-<meta name="description" content="Editor Markdown gaya VSCode yang berjalan 100% offline di browser.">
+<meta name="description" content="A VSCode-style Markdown editor that runs 100% offline in the browser.">
 <meta name="theme-color" content="#0d1117">
 <script>
-  // Terapkan tema tersimpan lebih awal (sebelum body dirender) agar tidak ada efek kedip
+  // Apply the saved theme early (before the body renders) so there is no flash effect
   (function(){
     try {
       var t = window.localStorage.getItem("wolioWord.theme.v1");
@@ -28,11 +28,11 @@
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Wolio Word — Editor Markdown Offline">
-<meta property="og:description" content="Editor Markdown gaya VSCode yang berjalan 100% offline di browser, tanpa server, tanpa build step.">
+<meta property="og:description" content="A VSCode-style Markdown editor that runs 100% offline in the browser, no server, no build step.">
 <meta property="og:image" content="icons/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Wolio Word — Editor Markdown Offline">
-<meta name="twitter:description" content="Editor Markdown gaya VSCode yang berjalan 100% offline di browser.">
+<meta name="twitter:description" content="A VSCode-style Markdown editor that runs 100% offline in the browser.">
 <meta name="twitter:image" content="icons/og-image.png">
 
 <link rel="stylesheet" href="style.css">
@@ -45,47 +45,47 @@
       <path d="M0 0 C13.34714648 9.8509028 21.2785253 22.19752904 24.20703125 38.62890625 C24.60874816 43.76631753 24.61363206 48.88825874 24.58798218 54.0378418 C24.5914454 55.56582567 24.59621439 57.09380704 24.60216391 58.62178326 C24.61461243 62.79015506 24.60853177 66.95831909 24.59920526 71.12669134 C24.59238973 75.63392339 24.60290836 80.14112087 24.61114502 84.64834595 C24.62445792 93.46600299 24.62161552 102.28358325 24.6129071 111.10124326 C24.60612133 118.27000637 24.60521769 125.43874802 24.60847855 132.60751343 C24.60893825 133.62930653 24.60939794 134.65109964 24.60987157 135.70385617 C24.61083079 137.77985899 24.61180343 139.85586181 24.61278935 141.93186462 C24.62133609 161.38094822 24.61152035 180.82998934 24.59538825 200.27906597 C24.58198572 216.95331785 24.58431402 233.62750706 24.59814453 250.30175781 C24.61421299 269.68308067 24.62051218 289.06436633 24.61130774 308.44569492 C24.61035213 310.5138963 24.60940902 312.58209768 24.60847855 314.65029907 C24.60801572 315.66779147 24.60755289 316.68528387 24.60707604 317.73360938 C24.60448995 324.89056112 24.60884892 332.04748918 24.61591721 339.20443726 C24.62434647 347.93094516 24.62202209 356.65737216 24.60607497 365.38387084 C24.59821146 369.83297155 24.5950678 374.28193754 24.60502243 378.73103714 C24.61400975 382.80961235 24.60897053 386.88792887 24.59308977 390.96648085 C24.58975898 392.43604072 24.59139739 393.90562279 24.59871714 395.3751682 C24.67609586 412.21123239 20.98932033 427.27536359 9.15234375 439.85546875 C-3.49028464 451.38107776 -17.92002556 456.48454659 -34.9609375 455.9140625 C-48.23347132 454.92640198 -58.73648228 448.98404409 -68.79296875 440.62890625 C-69.63472656 439.94828125 -70.47648437 439.26765625 -71.34375 438.56640625 C-75.7717063 434.97790332 -80.14882934 431.33480766 -84.48486328 427.63623047 C-89.46168469 423.39116226 -94.49598747 419.25937891 -99.66796875 415.25390625 C-105.35134853 410.84871312 -110.78529563 406.20976274 -116.18701172 401.46533203 C-120.28966775 397.88068276 -124.48090876 394.4578555 -128.79296875 391.12890625 C-134.43985071 386.76946239 -139.82852548 382.17190178 -145.1875 377.46484375 C-149.29004685 373.88042393 -153.48109181 370.45771418 -157.79296875 367.12890625 C-163.43366941 362.77423441 -168.81688986 358.18223101 -174.16992188 353.48022461 C-179.00439479 349.25636226 -183.98279502 345.25818962 -189.05517578 341.32495117 C-193.0772095 338.20545389 -196.97422764 334.99303532 -200.79296875 331.62890625 C-204.77909786 333.34284383 -207.99468491 336.00406017 -211.35546875 338.69140625 C-211.97824707 339.18527832 -212.60102539 339.67915039 -213.24267578 340.18798828 C-217.8046761 343.81491295 -222.32659728 347.48970944 -226.828125 351.19140625 C-235.39489145 358.23443954 -243.98444506 365.2467028 -252.73046875 372.06640625 C-258.73578289 376.74974173 -264.61146534 381.57971741 -270.47631836 386.43725586 C-275.4183121 390.52142359 -280.42522479 394.50782146 -285.484375 398.4453125 C-290.1539588 402.09375725 -294.7293776 405.84904453 -299.29296875 409.62890625 C-304.95814341 414.32117077 -310.67207041 418.93235491 -316.484375 423.44091797 C-319.68982632 425.93901599 -322.83952443 428.4888096 -325.94921875 431.10546875 C-345.13892201 447.25221477 -361.51721491 457.20258143 -387.27734375 455.4609375 C-399.81157017 453.3961909 -412.03562613 445.36999679 -419.79296875 435.62890625 C-430.15474876 421.16746545 -432.10677097 406.09174065 -432.04693604 388.67553711 C-432.04924511 387.19705267 -432.05242461 385.71856938 -432.05639052 384.24008846 C-432.06468588 380.20857287 -432.06063737 376.17715282 -432.05441809 372.14563704 C-432.04987292 367.78565312 -432.05688756 363.42568506 -432.06237793 359.06570435 C-432.07125161 350.53682222 -432.06935896 342.00797537 -432.06355265 333.47909188 C-432.05902818 326.54488604 -432.05842665 319.61069005 -432.06060028 312.67648315 C-432.06090675 311.68799438 -432.06121321 310.69950561 -432.06152897 309.68106264 C-432.06216844 307.67270382 -432.06281687 305.664345 -432.06347415 303.65598619 C-432.06917151 284.84213298 -432.06262887 266.02829929 -432.05187342 247.21444929 C-432.04293845 231.08599027 -432.04449066 214.95756006 -432.05371094 198.82910156 C-432.06442406 180.08063693 -432.06862224 161.33218938 -432.06248641 142.58372211 C-432.06184934 140.58292453 -432.0612206 138.58212694 -432.06060028 136.58132935 C-432.06029173 135.59700627 -432.05998318 134.61268319 -432.05966528 133.59853214 C-432.05794147 126.6760253 -432.06084667 119.75352933 -432.06555939 112.83102417 C-432.0711798 104.38999536 -432.06962739 95.94900373 -432.0589979 87.50797915 C-432.05375681 83.2047221 -432.05165771 78.90152695 -432.0582962 74.59827042 C-432.06429024 70.65297647 -432.06092403 66.70780134 -432.0503411 62.76251805 C-432.04812164 61.34140868 -432.04921035 59.92028911 -432.05409268 58.4991864 C-432.11189547 40.2643645 -429.15823727 24.67939024 -416.79296875 10.62890625 C-410.22917047 4.22447181 -403.36531102 -0.1615438 -394.79296875 -3.37109375 C-393.69984375 -3.78359375 -392.60671875 -4.19609375 -391.48046875 -4.62109375 C-375.48631975 -7.874141 -360.99232311 -6.04821559 -346.91015625 2.34765625 C-334.35279052 10.8824675 -326.14848675 22.80870175 -322.79296875 37.62890625 C-321.8784848 43.69446994 -321.65311002 49.57419041 -321.67271423 55.70227051 C-321.67185981 56.68915847 -321.67100538 57.67604644 -321.67012507 58.6928401 C-321.66848391 61.98469859 -321.67396924 65.27650561 -321.67944336 68.56835938 C-321.67972555 70.93404133 -321.67956687 73.29972337 -321.67900085 75.66540527 C-321.67871413 82.07795785 -321.68459072 88.4904917 -321.69157481 94.90303993 C-321.69767422 100.9285614 -321.69819844 106.95408496 -321.69922668 112.97960895 C-321.70141251 124.91023762 -321.70805985 136.84085943 -321.7175293 148.77148438 C-321.72671557 160.35742153 -321.73379046 171.94335681 -321.73803711 183.52929688 C-321.73829983 184.24407403 -321.73856256 184.95885118 -321.73883324 185.69528824 C-321.74013833 189.28130025 -321.74140202 192.86731228 -321.74264514 196.45332432 C-321.75300313 226.17852289 -321.77068327 255.90371413 -321.79296875 285.62890625 C-319.55490828 283.87424424 -317.31735215 282.11894553 -315.08007812 280.36328125 C-314.45083435 279.87005371 -313.82159058 279.37682617 -313.17327881 278.86865234 C-308.48799546 275.19080053 -303.86807491 271.44303322 -299.29296875 267.62890625 C-293.48639368 262.81655336 -287.62069659 258.09592349 -281.67529297 253.45654297 C-277.3185653 250.05375164 -273.02779263 246.57769682 -268.7578125 243.06640625 C-220.26392172 203.19791106 -220.26392172 203.19791106 -197.07104492 204.95654297 C-182.28212025 206.44052602 -172.02220226 212.22080916 -160.79296875 221.62890625 C-159.97046631 222.31509033 -159.97046631 222.31509033 -159.13134766 223.01513672 C-156.37215412 225.32378353 -153.62840053 227.64971969 -150.89453125 229.98828125 C-147.26335581 233.09051473 -143.56553452 236.10814931 -139.86328125 239.125 C-136.04077566 242.24233599 -132.22758388 245.37083565 -128.41796875 248.50390625 C-127.68570068 249.10605957 -126.95343262 249.70821289 -126.19897461 250.32861328 C-121.80080021 253.95282228 -117.4392747 257.61562059 -113.10546875 261.31640625 C-108.0847121 265.60090075 -102.9461933 269.71451934 -97.72387695 273.75073242 C-94.78267601 276.03065518 -91.90762413 278.3629799 -89.08740234 280.79174805 C-88.46739349 281.32511276 -87.84738464 281.85847748 -87.20858765 282.40800476 C-86.74143341 282.81090225 -86.27427917 283.21379974 -85.79296875 283.62890625 C-85.79076891 281.75564997 -85.79076891 281.75564997 -85.78852463 279.84455013 C-85.7527648 250.14970703 -85.69644046 220.45497976 -85.6150478 190.76022997 C-85.60503124 187.09934968 -85.59518696 183.43846894 -85.58544922 179.77758789 C-85.58253716 178.68443895 -85.58253716 178.68443895 -85.57956627 177.56920619 C-85.54860846 165.79409972 -85.53158304 154.0190127 -85.51977453 142.24387323 C-85.50733064 130.14696283 -85.47975658 118.05015395 -85.43835568 105.95330769 C-85.41555058 99.16479493 -85.39956113 92.37641298 -85.4010849 85.5878582 C-85.40183323 79.18972983 -85.38381239 72.79192082 -85.35180092 66.39387512 C-85.34332791 64.05391968 -85.34153418 61.71392831 -85.34716606 59.37396431 C-85.38880972 39.40119119 -83.74767213 22.78779592 -69.6328125 7.4375 C-51.30584282 -10.57818357 -21.7399214 -14.38512212 0 0 Z " transform="translate(558.79296875,110.37109375)"/>
     </svg>
     <span class="brand-name">Wolio Word</span>
-    <span class="tagline" style="font-weight:400;color:var(--fg-muted);">&mdash; editor &amp; preview offline</span>
+    <span class="tagline" style="font-weight:400;color:var(--fg-muted);">&mdash; offline editor &amp; preview</span>
   </div>
 
   <div class="header-actions">
     <div class="header-actions-row">
-      <nav class="activity-bar" aria-label="Panel samping">
-        <button id="homeBtn" class="activity-btn" title="Kembali ke Beranda">
+      <nav class="activity-bar" aria-label="Side panel">
+        <button id="homeBtn" class="activity-btn" title="Back to Home">
           <svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7.5 8 2l6 5.5"/><path d="M3.5 6.5V13a.8.8 0 0 0 .8.8H6.2a.5.5 0 0 0 .5-.5v-3.3a.8.8 0 0 1 .8-.8h1a.8.8 0 0 1 .8.8V13.3a.5.5 0 0 0 .5.5h1.9a.8.8 0 0 0 .8-.8V6.5"/></svg>
         </button>
-        <button id="sidebarFilesBtn" class="activity-btn" title="Daftar Tab (Files)">
+        <button id="sidebarFilesBtn" class="activity-btn" title="Tab List (Files)">
           <svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 1.5h5.5L12 4v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1Z"/><path d="M9.2 1.5V4h3"/></svg>
         </button>
-        <button id="sidebarOutlineBtn" class="activity-btn" title="Daftar Isi (Outline)">
+        <button id="sidebarOutlineBtn" class="activity-btn" title="Table of Contents (Outline)">
           <svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="2" cy="4" r="0.9" fill="currentColor" stroke="none"/><path d="M5 4h9"/><circle cx="3" cy="8" r="0.9" fill="currentColor" stroke="none"/><path d="M6 8h6"/><circle cx="2" cy="12" r="0.9" fill="currentColor" stroke="none"/><path d="M5 12h9"/></svg>
         </button>
-        <button id="sidebarSearchBtn" class="activity-btn" title="Cari &amp; Ganti (Ctrl+F)">
+        <button id="sidebarSearchBtn" class="activity-btn" title="Find &amp; Replace (Ctrl+F)">
           <svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M13.5 13.5 10.3 10.3"/></svg>
         </button>
         <button id="sidebarPaletteBtn" class="activity-btn" title="Command Palette (Ctrl+K)">
           <svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h7"/></svg>
         </button>
-        <button id="sidebarSettingsBtn" class="activity-btn" title="Impor / Ekspor">
+        <button id="sidebarSettingsBtn" class="activity-btn" title="Import / Export">
           <svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.93 10a1.1 1.1 0 0 0 .22 1.21l.04.04a1.33 1.33 0 1 1-1.89 1.89l-.04-.04a1.1 1.1 0 0 0-1.21-.22 1.1 1.1 0 0 0-.67 1.01V14a1.33 1.33 0 0 1-2.67 0v-.06a1.1 1.1 0 0 0-.67-1.01A1.1 1.1 0 0 0 6 12.93a1.1 1.1 0 0 0-1.21.22l-.04.04a1.33 1.33 0 1 1-1.89-1.89l.04-.04a1.1 1.1 0 0 0 .22-1.21 1.1 1.1 0 0 0-1.01-.67H2a1.33 1.33 0 0 1 0-2.67h.06A1.1 1.1 0 0 0 3.07 6a1.1 1.1 0 0 0-.22-1.21l-.04-.04a1.33 1.33 0 1 1 1.89-1.89l.04.04a1.1 1.1 0 0 0 1.21.22H6a1.1 1.1 0 0 0 .67-1.01V2a1.33 1.33 0 0 1 2.67 0v.06a1.1 1.1 0 0 0 .67 1.01 1.1 1.1 0 0 0 1.21-.22l.04-.04a1.33 1.33 0 1 1 1.89 1.89l-.04.04a1.1 1.1 0 0 0-.22 1.21V6a1.1 1.1 0 0 0 1.01.67H14a1.33 1.33 0 0 1 0 2.67h-.06a1.1 1.1 0 0 0-1.01.67z"/><circle cx="8" cy="8" r="2"/></svg>
         </button>
       </nav>
 
-      <button id="themeToggle" class="activity-btn" title="Ganti tema terang/gelap">
+      <button id="themeToggle" class="activity-btn" title="Toggle light/dark theme">
         <svg viewBox="0 0 16 16" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M8.4 1.6a.7.7 0 0 1 .8.9A5.3 5.3 0 0 0 13.5 9a.7.7 0 0 1 .9.8A6.7 6.7 0 1 1 8.4 1.6Z"/></svg>
       </button>
     </div>
 
-    <div class="btn-group" role="tablist" aria-label="Mode tampilan">
-      <button id="modeEdit" class="active" title="Mode Editor">
+    <div class="btn-group" role="tablist" aria-label="View mode">
+      <button id="modeEdit" class="active" title="Editor Mode">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.3 1.7a1.5 1.5 0 0 1 2.1 2.1L5 12.2l-3.2.9.9-3.2Z"/><path d="M9.8 3.2 12.8 6.2"/></svg>
         Editor
       </button>
-      <button id="modePreview" title="Mode Review / Preview">
+      <button id="modePreview" title="Review / Preview Mode">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 8S3.5 3.5 8 3.5 15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8Z"/><circle cx="8" cy="8" r="2"/></svg>
         Review
       </button>
-      <button id="modeSplit" title="Tampilkan keduanya berdampingan">
+      <button id="modeSplit" title="Show both side by side">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="2.5" width="5.5" height="11" rx="1"/><rect x="9" y="2.5" width="5.5" height="11" rx="1"/></svg>
         Split
       </button>
@@ -96,47 +96,47 @@
   <input type="file" id="folderInput" webkitdirectory directory multiple>
 
   <div class="settings-flyout" id="settingsFlyout">
-    <div class="flyout-title">Impor / Ekspor</div>
-    <div class="flyout-subtitle" style="padding-top:2px;">Nama file</div>
+    <div class="flyout-title">Import / Export</div>
+    <div class="flyout-subtitle" style="padding-top:2px;">File name</div>
     <div class="flyout-filename-wrap">
-      <input id="filenameInput" class="filename" value="README.md" spellcheck="false" title="Nama file">
+      <input id="filenameInput" class="filename" value="README.md" spellcheck="false" title="File name">
     </div>
     <div class="flyout-divider"></div>
     <button type="button" class="flyout-action" id="settingsImportBtn">
       <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10.3V2M8 2 5.2 4.8M8 2l2.8 2.8"/><path d="M2.5 10.5v2.2a1.3 1.3 0 0 0 1.3 1.3h8.4a1.3 1.3 0 0 0 1.3-1.3v-2.2"/></svg>
-      Impor file .md / .txt
+      Import .md / .txt file
     </button>
     <button type="button" class="flyout-action" id="settingsImportFolderBtn">
       <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3.5h4l1.2 1.5h6.3a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-7.5a.5.5 0 0 1 .5-.5Z"/></svg>
-      Impor folder (.md / .txt)
+      Import folder (.md / .txt)
     </button>
     <div class="flyout-divider"></div>
-    <div class="flyout-subtitle">Ekspor sebagai</div>
+    <div class="flyout-subtitle">Export as</div>
     <button type="button" class="flyout-action" data-export="md">.md — Markdown</button>
-    <button type="button" class="flyout-action" data-export="txt">.txt — Teks polos</button>
-    <button type="button" class="flyout-action" data-export="html">.html — Halaman mandiri</button>
-    <button type="button" class="flyout-action" data-export="pdf">.pdf — Dokumen PDF</button>
+    <button type="button" class="flyout-action" data-export="txt">.txt — Plain text</button>
+    <button type="button" class="flyout-action" data-export="html">.html — Standalone page</button>
+    <button type="button" class="flyout-action" data-export="pdf">.pdf — PDF document</button>
 
   </div>
 
   <div class="files-flyout" id="filesFlyout">
-    <div class="flyout-title">Tab Terbuka</div>
+    <div class="flyout-title">Open Tabs</div>
     <div id="filesFlyoutList"></div>
     <div class="flyout-divider"></div>
-    <div class="flyout-subtitle">Riwayat Versi (tab aktif)</div>
-    <button type="button" class="flyout-action" id="historyCheckpointBtn">+ Simpan checkpoint sekarang</button>
+    <div class="flyout-subtitle">Version History (active tab)</div>
+    <button type="button" class="flyout-action" id="historyCheckpointBtn">+ Save checkpoint now</button>
     <div id="historyFlyoutList"></div>
   </div>
 
   <div class="files-flyout" id="outlineFlyout">
-    <div class="flyout-title">Daftar Isi</div>
+    <div class="flyout-title">Table of Contents</div>
     <div id="outlineFlyoutList"></div>
   </div>
 </header>
 
 <div class="tabbar">
-  <div class="tabstrip" id="tabStrip" role="tablist" aria-label="Tab proyek"></div>
-  <button id="newTabBtn" class="tab-add" title="Tab proyek baru">
+  <div class="tabstrip" id="tabStrip" role="tablist" aria-label="Project tabs"></div>
+  <button id="newTabBtn" class="tab-add" title="New project tab">
     <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11"/></svg>
   </button>
 </div>
@@ -145,34 +145,34 @@
   <section class="pane" id="paneEdit">
     <div class="pane-header">Editor — Markdown</div>
     <div class="find-bar" id="findBar">
-      <input id="findInput" type="text" placeholder="Cari..." spellcheck="false">
-      <button id="findPrevBtn" class="icon-only" title="Sebelumnya">
+      <input id="findInput" type="text" placeholder="Find..." spellcheck="false">
+      <button id="findPrevBtn" class="icon-only" title="Previous">
         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4-4 4 4"/></svg>
       </button>
-      <button id="findNextBtn" class="icon-only" title="Berikutnya">
+      <button id="findNextBtn" class="icon-only" title="Next">
         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
       </button>
       <span class="find-count" id="findCount"></span>
-      <input id="replaceInput" type="text" placeholder="Ganti dengan..." spellcheck="false">
-      <button id="replaceOneBtn">Ganti</button>
-      <button id="replaceAllBtn">Ganti Semua</button>
-      <button id="findCloseBtn" class="icon-only" title="Tutup">
+      <input id="replaceInput" type="text" placeholder="Replace with..." spellcheck="false">
+      <button id="replaceOneBtn">Replace</button>
+      <button id="replaceAllBtn">Replace All</button>
+      <button id="findCloseBtn" class="icon-only" title="Close">
         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>
       </button>
     </div>
     <div class="pane-body" id="editorPaneBody">
-      <textarea id="editor" spellcheck="false" placeholder="# Judul dokumen kamu
+      <textarea id="editor" spellcheck="false" placeholder="# Your document title
 
-Tulis Markdown di sini... lalu klik Review atau Split untuk melihat hasilnya."></textarea>
+Write Markdown here... then click Review or Split to see the result."></textarea>
     </div>
   </section>
 
-  <div class="pane-resizer" id="paneResizer" title="Seret untuk mengubah ukuran">
+  <div class="pane-resizer" id="paneResizer" title="Drag to resize">
     <div class="pane-resizer-grip"></div>
   </div>
 
   <section class="pane" id="panePreview" style="display:none;">
-    <div class="pane-header">Review — Hasil Render</div>
+    <div class="pane-header">Review — Rendered Output</div>
     <div class="pane-body">
       <div id="previewWrap">
         <article class="markdown-body" id="preview"></article>
@@ -182,17 +182,17 @@ Tulis Markdown di sini... lalu klik Review atau Split untuk melihat hasilnya."><
 </main>
 
 <footer>
-  <span id="status">Siap.</span>
+  <span id="status">Ready.</span>
   <span class="footer-right">
-    <span id="cursorPos">Baris 1, Kol 1</span>
+    <span id="cursorPos">Line 1, Col 1</span>
     <span id="modeLabel">Editor</span>
-    <span id="stats">0 baris · 0 kata · 0 karakter</span>
+    <span id="stats">0 lines · 0 words · 0 characters</span>
   </span>
 </footer>
 
 <div class="palette-overlay" id="paletteOverlay">
   <div class="palette-box" role="dialog" aria-label="Command Palette">
-    <input id="paletteInput" type="text" placeholder="Ketik perintah... (mis. ekspor, tema, split)" spellcheck="false" autocomplete="off">
+    <input id="paletteInput" type="text" placeholder="Type a command... (e.g. export, theme, split)" spellcheck="false" autocomplete="off">
     <div class="palette-list" id="paletteList"></div>
   </div>
 </div>
