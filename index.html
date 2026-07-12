@@ -332,19 +332,33 @@
     } catch (e){ return { version:1, tabs:[], tabIdSeq:1, activeTabId:null }; }
   }
 
-  function addTabAndGo(filename, content){
+  function hasUnsavedWork(state){
+    return state.tabs.some(function(t){ return t.dirty; });
+  }
+
+  // Always keeps exactly ONE project in the workspace: any existing project
+  // is replaced rather than adding a second tab. If the current project has
+  // unsaved edits, the user is asked to confirm before it's discarded.
+  function replaceProjectAndGo(filename, content){
     var state = loadAutosaveState();
-    var id = state.tabIdSeq || (state.tabs.length + 1);
-    state.tabs.push({ id:id, filename:filename, content:content, mode:"edit", dirty:false, history:[], folder:null });
-    state.activeTabId = id;
-    state.tabIdSeq = id + 1;
-    state.savedAt = Date.now();
-    try { window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state)); } catch (e){}
+    if (hasUnsavedWork(state)){
+      var ok = window.confirm("You have unsaved changes in your current project. Discard them and continue?");
+      if (!ok) return;
+    }
+    var id = 1;
+    var newState = {
+      version: 1,
+      tabs: [{ id:id, filename:filename, content:content, mode:"edit", dirty:false, history:[], folder:null }],
+      tabIdSeq: id + 1,
+      activeTabId: id,
+      savedAt: Date.now()
+    };
+    try { window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(newState)); } catch (e){}
     window.location.href = "app.html";
   }
 
   document.getElementById("btnNewProject").addEventListener("click", function(){
-    addTabAndGo("unsaved.md", "");
+    replaceProjectAndGo("unsaved.md", "");
   });
 
   /* Tutorial content is embedded here (mirrors CARA-PAKAI-MARKDOWN.md) so it
@@ -354,7 +368,7 @@
   var TUTORIAL_CONTENT = "# Cara Pakai Markdown di Wolio Word\n\nPanduan singkat sintaks Markdown yang didukung editor Wolio Word, lengkap dengan contoh. Tulis di panel **Editor**, lihat hasilnya langsung di panel **Review**.\n\n## Heading\n\n```\n# Judul 1\n## Judul 2\n### Judul 3\n```\n\nHeading otomatis muncul di panel **Daftar Isi** (ikon garis di activity bar).\n\n## Teks\n\n| Sintaks | Hasil |\n|---|---|\n| `**tebal**` | **tebal** |\n| `*miring*` | *miring* |\n| `***tebal miring***` | ***tebal miring*** |\n| `~~coret~~` | ~~coret~~ |\n| `` `kode inline` `` | `kode inline` |\n| `<kbd>Ctrl</kbd>` | tombol keyboard bergaya |\n\n## List\n\n```\n- Item satu\n- Item dua\n  - Sub-item\n\n1. Langkah pertama\n2. Langkah kedua\n\n- [ ] Belum selesai\n- [x] Sudah selesai\n```\n\n## Blockquote\n\n```\n> Ini kutipan.\n> Bisa nested juga:\n> > Kutipan di dalam kutipan.\n```\n\n## Kode blok (dengan syntax highlight + tombol salin)\n\n````\n```js\nfunction halo(nama) {\n  console.log(\"Halo, \" + nama);\n}\n```\n````\n\nGanti `js` dengan bahasa lain (`python`, `html`, `css`, dll) untuk highlight yang sesuai.\n\n## Tabel\n\n```\n| Nama | Peran |\n|---|---|\n| Randy | Developer |\n| Wolio Word | Editor |\n```\n\n## Link & Gambar\n\n```\n[Teks tautan](https://contoh.com \"judul opsional\")\n![Teks alternatif](gambar.png \"judul opsional\")\n```\n\nLink eksternal (`http/https`) otomatis dibuka di tab baru.\n\n## Garis pemisah\n\n```\n---\n```\n\n## Diagram Mermaid\n\n````\n```mermaid\ngraph TD\n  A[Mulai] --> B{Cek kondisi}\n  B -->|Ya| C[Lakukan aksi]\n  B -->|Tidak| D[Selesai]\n```\n````\n\n> Butuh koneksi internet **sekali** saat pertama kali dipakai (memuat library Mermaid dari CDN). Setelah itu bisa dipakai offline selama sesi browser masih terbuka. Kalau tidak ada internet sama sekali, kode diagramnya tetap ditampilkan sebagai teks biasa (fallback), tidak error.\n\n## Fitur editor pendukung\n\n- **Mode Editor / Review / Split** \u2014 tombol di kanan atas header.\n- **Command Palette** (`Ctrl+K`) \u2014 jalankan aksi cepat lewat pencarian.\n- **Cari & Ganti** (`Ctrl+F`) \u2014 ikon kaca pembesar di activity bar.\n- **Tab & multi-file** \u2014 buka beberapa dokumen sekaligus, tersimpan otomatis di browser (localStorage) \u2014 tidak hilang saat direfresh.\n- **Riwayat versi (checkpoint)** \u2014 simpan snapshot manual dari tab yang aktif lewat panel Files.\n- **Impor / Ekspor** \u2014 impor `.md` / `.txt`, ekspor sebagai `.md`, `.txt`, `.html` (mandiri, bisa dibuka standalone), atau `.pdf` (lewat dialog cetak browser).\n\n## Catatan\n\nWolio Word 100% berjalan offline di browser \u2014 tidak butuh server, tidak butuh instalasi. Cukup buka `index.html`.\n";
 
   document.getElementById("btnTutorial").addEventListener("click", function(){
-    addTabAndGo(TUTORIAL_FILENAME, TUTORIAL_CONTENT);
+    replaceProjectAndGo(TUTORIAL_FILENAME, TUTORIAL_CONTENT);
   });
 
   document.getElementById("btnImportProject").addEventListener("click", function(){
@@ -367,7 +381,7 @@
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function(){
-      addTabAndGo(file.name || "imported.md", reader.result != null ? reader.result : "");
+      replaceProjectAndGo(file.name || "imported.md", reader.result != null ? reader.result : "");
     };
     reader.readAsText(file, "UTF-8");
   });
