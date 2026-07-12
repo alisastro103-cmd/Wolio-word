@@ -4,8 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wolio Word — Offline Markdown Editor</title>
-<meta name="description" content="Wolio Word makes writing markdown easy. A VSCode-style Markdown editor that runs 100% offline in the browser.">
+<meta name="description" content="Wolio Word makes writing markdown easy. A free, VSCode-style Markdown editor with live preview that runs 100% offline in your browser — no install, no account, no server.">
+<meta name="keywords" content="markdown editor, offline markdown editor, markdown preview, free markdown editor, browser markdown editor, VSCode style editor, write markdown online, markdown to html, markdown to pdf, Wolio Word">
+<meta name="author" content="Wolio Word">
+<meta name="robots" content="index, follow">
 <meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="https://alisastro103-cmd.github.io/Wolio-word/">
+<meta name="application-name" content="Wolio Word">
 
 <script>
   // Apply the saved theme early (before the body renders) so there is no flash effect,
@@ -24,12 +29,20 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://alisastro103-cmd.github.io/Wolio-word/">
+<meta property="og:site_name" content="Wolio Word">
+<meta property="og:locale" content="en_US">
 <meta property="og:title" content="Wolio Word — Offline Markdown Editor">
-<meta property="og:description" content="Wolio Word makes writing markdown easy.">
-<meta property="og:image" content="icons/og-image.png">
+<meta property="og:description" content="A free, VSCode-style Markdown editor with live preview that runs 100% offline in your browser — no install, no account, no server.">
+<meta property="og:image" content="https://alisastro103-cmd.github.io/Wolio-word/icons/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wolio Word — offline Markdown editor logo">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Wolio Word — Offline Markdown Editor">
-<meta name="twitter:image" content="icons/og-image.png">
+<meta name="twitter:description" content="A free, VSCode-style Markdown editor with live preview that runs 100% offline in your browser — no install, no account, no server.">
+<meta name="twitter:image" content="https://alisastro103-cmd.github.io/Wolio-word/icons/og-image.png">
+<meta name="twitter:image:alt" content="Wolio Word — offline Markdown editor logo">
 
 <style>
   ::selection{ background:transparent; color:inherit; }
@@ -252,6 +265,19 @@
   .site-footer a:hover{ color:var(--fg-strong); }
   .site-footer .sep{ margin:0 8px; }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Wolio Word",
+  "description": "A free, VSCode-style Markdown editor with live preview that runs 100% offline in your browser — no install, no account, no server.",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "Any (runs in web browser)",
+  "url": "https://alisastro103-cmd.github.io/Wolio-word/",
+  "image": "https://alisastro103-cmd.github.io/Wolio-word/icons/og-image.png",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 </head>
 <body>
 
@@ -279,6 +305,10 @@
         <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 14.5s-5.5-3.36-5.5-7.2C2.5 4.9 4.1 3.5 6 3.5c1 0 1.6.4 2 1 .4-.6 1-1 2-1 1.9 0 3.5 1.4 3.5 3.8 0 3.84-5.5 7.2-5.5 7.2Z"/></svg>
         Support me
       </a>
+      <button type="button" class="btn btn-outline btn-support" id="btnTutorial">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><line x1="8" y1="7.2" x2="8" y2="11.3"/><circle cx="8" cy="5" r="0.4" fill="currentColor" stroke="none"/></svg>
+        Tutorial
+      </button>
     </div>
   </main>
 
@@ -315,6 +345,16 @@
 
   document.getElementById("btnNewProject").addEventListener("click", function(){
     addTabAndGo("unsaved.md", "");
+  });
+
+  /* Tutorial content is embedded here (mirrors CARA-PAKAI-MARKDOWN.md) so it
+     opens instantly and still works when this page is run straight from disk
+     (file://), where fetch() of local files is blocked by browsers. */
+  var TUTORIAL_FILENAME = "CARA-PAKAI-MARKDOWN.md";
+  var TUTORIAL_CONTENT = "# Cara Pakai Markdown di Wolio Word\n\nPanduan singkat sintaks Markdown yang didukung editor Wolio Word, lengkap dengan contoh. Tulis di panel **Editor**, lihat hasilnya langsung di panel **Review**.\n\n## Heading\n\n```\n# Judul 1\n## Judul 2\n### Judul 3\n```\n\nHeading otomatis muncul di panel **Daftar Isi** (ikon garis di activity bar).\n\n## Teks\n\n| Sintaks | Hasil |\n|---|---|\n| `**tebal**` | **tebal** |\n| `*miring*` | *miring* |\n| `***tebal miring***` | ***tebal miring*** |\n| `~~coret~~` | ~~coret~~ |\n| `` `kode inline` `` | `kode inline` |\n| `<kbd>Ctrl</kbd>` | tombol keyboard bergaya |\n\n## List\n\n```\n- Item satu\n- Item dua\n  - Sub-item\n\n1. Langkah pertama\n2. Langkah kedua\n\n- [ ] Belum selesai\n- [x] Sudah selesai\n```\n\n## Blockquote\n\n```\n> Ini kutipan.\n> Bisa nested juga:\n> > Kutipan di dalam kutipan.\n```\n\n## Kode blok (dengan syntax highlight + tombol salin)\n\n````\n```js\nfunction halo(nama) {\n  console.log(\"Halo, \" + nama);\n}\n```\n````\n\nGanti `js` dengan bahasa lain (`python`, `html`, `css`, dll) untuk highlight yang sesuai.\n\n## Tabel\n\n```\n| Nama | Peran |\n|---|---|\n| Randy | Developer |\n| Wolio Word | Editor |\n```\n\n## Link & Gambar\n\n```\n[Teks tautan](https://contoh.com \"judul opsional\")\n![Teks alternatif](gambar.png \"judul opsional\")\n```\n\nLink eksternal (`http/https`) otomatis dibuka di tab baru.\n\n## Garis pemisah\n\n```\n---\n```\n\n## Diagram Mermaid\n\n````\n```mermaid\ngraph TD\n  A[Mulai] --> B{Cek kondisi}\n  B -->|Ya| C[Lakukan aksi]\n  B -->|Tidak| D[Selesai]\n```\n````\n\n> Butuh koneksi internet **sekali** saat pertama kali dipakai (memuat library Mermaid dari CDN). Setelah itu bisa dipakai offline selama sesi browser masih terbuka. Kalau tidak ada internet sama sekali, kode diagramnya tetap ditampilkan sebagai teks biasa (fallback), tidak error.\n\n## Fitur editor pendukung\n\n- **Mode Editor / Review / Split** \u2014 tombol di kanan atas header.\n- **Command Palette** (`Ctrl+K`) \u2014 jalankan aksi cepat lewat pencarian.\n- **Cari & Ganti** (`Ctrl+F`) \u2014 ikon kaca pembesar di activity bar.\n- **Tab & multi-file** \u2014 buka beberapa dokumen sekaligus, tersimpan otomatis di browser (localStorage) \u2014 tidak hilang saat direfresh.\n- **Riwayat versi (checkpoint)** \u2014 simpan snapshot manual dari tab yang aktif lewat panel Files.\n- **Impor / Ekspor** \u2014 impor `.md` / `.txt`, ekspor sebagai `.md`, `.txt`, `.html` (mandiri, bisa dibuka standalone), atau `.pdf` (lewat dialog cetak browser).\n\n## Catatan\n\nWolio Word 100% berjalan offline di browser \u2014 tidak butuh server, tidak butuh instalasi. Cukup buka `index.html`.\n";
+
+  document.getElementById("btnTutorial").addEventListener("click", function(){
+    addTabAndGo(TUTORIAL_FILENAME, TUTORIAL_CONTENT);
   });
 
   document.getElementById("btnImportProject").addEventListener("click", function(){
