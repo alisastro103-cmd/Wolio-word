@@ -202,6 +202,15 @@ body{
 .tab-add:active{background:var(--btn-border);}
 .tab-add svg{width:13px;height:13px;display:block;}
 
+/* Saat tab lebih dari 4, tab memendek sedikit; sisanya tinggal di-scroll */
+.tabstrip.compact .tab{
+  min-width:64px;
+  max-width:130px;
+  padding:6px 4px 6px 8px;
+  font-size:11px;
+}
+.tabstrip.compact .tab-label{ font-size:11px; }
+
 /* ---------- Pane resizer (seret untuk mengubah lebar editor/preview) ---------- */
 .pane-resizer{
   display:none;

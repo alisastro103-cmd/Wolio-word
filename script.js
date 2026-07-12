@@ -724,6 +724,7 @@
   }
 
   function renderTabs(){
+    tabStrip.classList.toggle("compact", tabs.length > 4);
     tabStrip.innerHTML = "";
     tabs.forEach(function(tab){
       var el = document.createElement("div");

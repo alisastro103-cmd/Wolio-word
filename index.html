@@ -57,7 +57,11 @@
     font-display:swap;
   }
 
-  *{ box-sizing:border-box; }
+  *{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-touch-callout:none;
+  }
 
   html{
     --bg:#ffffff;
@@ -247,62 +251,6 @@
   }
   .site-footer a:hover{ color:var(--fg-strong); }
   .site-footer .sep{ margin:0 8px; }
-
-  /* ---- Modal konfirmasi proyek belum disimpan ---- */
-  .confirm-overlay{
-    position:fixed;
-    inset:0;
-    background:var(--overlay-bg);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    z-index:20;
-  }
-  .confirm-overlay.open{ display:flex; }
-  .confirm-box{
-    background:var(--card-bg);
-    color:var(--fg-strong);
-    border-radius:14px;
-    padding:22px;
-    max-width:340px;
-    width:100%;
-    box-shadow:0 8px 30px var(--shadow);
-    text-align:left;
-  }
-  .confirm-box h2{
-    font-family:"Fraunces", Georgia, serif;
-    font-size:1.15rem;
-    margin:0 0 8px;
-  }
-  .confirm-box p{
-    font-size:0.9rem;
-    color:var(--fg-muted);
-    margin:0 0 18px;
-    line-height:1.5;
-  }
-  .confirm-actions{
-    display:flex;
-    gap:10px;
-  }
-  .confirm-actions button{
-    flex:1;
-    padding:10px 14px;
-    border-radius:10px;
-    font-size:0.9rem;
-    font-weight:600;
-    font-family:inherit;
-    cursor:pointer;
-    border:1px solid var(--btn-border);
-  }
-  .confirm-keep{
-    background:var(--card-bg);
-    color:var(--fg-strong);
-  }
-  .confirm-discard{
-    background:var(--fg-strong);
-    color:var(--btn-fg);
-  }
 </style>
 </head>
 <body>
@@ -341,102 +289,47 @@
   </footer>
 </div>
 
-<div class="confirm-overlay" id="confirmOverlay">
-  <div class="confirm-box" role="dialog" aria-modal="true" aria-label="Konfirmasi proyek belum disimpan">
-    <h2>Proyek belum disimpan</h2>
-    <p>Kamu punya perubahan yang belum disimpan. Lanjut sekarang berarti proyek itu akan hilang. Yakin mau lanjut?</p>
-    <div class="confirm-actions">
-      <button type="button" class="confirm-keep" id="confirmKeepBtn">Tidak, pertahankan</button>
-      <button type="button" class="confirm-discard" id="confirmDiscardBtn">Ya, lanjutkan</button>
-    </div>
-  </div>
-</div>
-
 <script>
   var AUTOSAVE_KEY = "wolioWord.autosave.v1";
-
-  function hasUnsavedProject(){
-    try {
-      var raw = window.localStorage.getItem(AUTOSAVE_KEY);
-      if (!raw) return false;
-      var state = JSON.parse(raw);
-      if (!state || !state.tabs) return false;
-      return state.tabs.some(function(t){ return t && t.dirty; });
-    } catch (e){ return false; }
-  }
-
-  function goToApp(action){
-    try { window.localStorage.removeItem(AUTOSAVE_KEY); } catch (e){}
-    window.location.href = "app.html?action=" + action;
-  }
-
-  var pendingAction = null;
-  var confirmOverlay = document.getElementById("confirmOverlay");
   var importFileInput = document.getElementById("importFileInput");
 
-  function startImportPicker(){
+  function loadAutosaveState(){
+    try {
+      var raw = window.localStorage.getItem(AUTOSAVE_KEY);
+      var state = raw ? JSON.parse(raw) : null;
+      if (!state || !Array.isArray(state.tabs)) return { version:1, tabs:[], tabIdSeq:1, activeTabId:null };
+      return state;
+    } catch (e){ return { version:1, tabs:[], tabIdSeq:1, activeTabId:null }; }
+  }
+
+  function addTabAndGo(filename, content){
+    var state = loadAutosaveState();
+    var id = state.tabIdSeq || (state.tabs.length + 1);
+    state.tabs.push({ id:id, filename:filename, content:content, mode:"edit", dirty:false, history:[], folder:null });
+    state.activeTabId = id;
+    state.tabIdSeq = id + 1;
+    state.savedAt = Date.now();
+    try { window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state)); } catch (e){}
+    window.location.href = "app.html";
+  }
+
+  document.getElementById("btnNewProject").addEventListener("click", function(){
+    addTabAndGo("unsaved.md", "");
+  });
+
+  document.getElementById("btnImportProject").addEventListener("click", function(){
     importFileInput.value = ""; // reset biar file yang sama bisa dipilih lagi
     importFileInput.click();
-  }
+  });
 
   importFileInput.addEventListener("change", function(){
     var file = importFileInput.files && importFileInput.files[0];
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function(){
-      var state = {
-        version: 1,
-        savedAt: Date.now(),
-        activeTabId: 1,
-        tabIdSeq: 2,
-        tabs: [{
-          id: 1,
-          filename: file.name || "imported.md",
-          content: reader.result != null ? reader.result : "",
-          mode: "edit",
-          dirty: false,
-          history: [],
-          folder: null
-        }]
-      };
-      try { window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state)); } catch (e){}
-      window.location.href = "app.html";
+      addTabAndGo(file.name || "imported.md", reader.result != null ? reader.result : "");
     };
     reader.readAsText(file, "UTF-8");
-  });
-
-  function askAndGo(action){
-    if (hasUnsavedProject()){
-      pendingAction = action;
-      confirmOverlay.classList.add("open");
-    } else if (action === "import"){
-      startImportPicker();
-    } else {
-      goToApp(action);
-    }
-  }
-
-  document.getElementById("btnNewProject").addEventListener("click", function(){ askAndGo("new"); });
-  document.getElementById("btnImportProject").addEventListener("click", function(){ askAndGo("import"); });
-  document.getElementById("confirmDiscardBtn").addEventListener("click", function(){
-    confirmOverlay.classList.remove("open");
-    if (pendingAction === "import"){
-      try { window.localStorage.removeItem(AUTOSAVE_KEY); } catch (e){}
-      startImportPicker();
-    } else if (pendingAction){
-      goToApp(pendingAction);
-    }
-    pendingAction = null;
-  });
-  document.getElementById("confirmKeepBtn").addEventListener("click", function(){
-    confirmOverlay.classList.remove("open");
-    pendingAction = null;
-  });
-  confirmOverlay.addEventListener("click", function(e){
-    if (e.target === confirmOverlay){
-      confirmOverlay.classList.remove("open");
-      pendingAction = null;
-    }
   });
 
   /* ---- Efek ketik pada tagline, dengan kursor huruf yang berkedip ---- */
