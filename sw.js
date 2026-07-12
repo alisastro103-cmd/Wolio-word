@@ -2,7 +2,7 @@
 // biar update selalu kepakai, cache-first untuk font/icon yang jarang berubah.
 // Versi cache: WAJIB naikkan angka ini tiap kali file inti berubah, biar user
 // otomatis dapat update (bukan versi lama yang nyangkut di cache selamanya).
-const CACHE_NAME = "wolio-word-v2";
+const CACHE_NAME = "wolio-word-v3";
 
 // File yang isinya SERING berubah (kode aplikasi) -> network-first
 const NETWORK_FIRST = [

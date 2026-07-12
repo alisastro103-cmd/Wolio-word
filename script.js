@@ -356,6 +356,7 @@
   var modePreview = document.getElementById("modePreview");
   var modeSplit = document.getElementById("modeSplit");
   var themeToggle = document.getElementById("themeToggle");
+  var homeBtn = document.getElementById("homeBtn");
   var filenameInput = document.getElementById("filenameInput");
   var fileInput = document.getElementById("fileInput");
   var statusEl = document.getElementById("status");
@@ -1373,6 +1374,11 @@
     }
   }
 
+  homeBtn.addEventListener("click", function(){
+    autosaveNow();
+    window.location.href = "index.html";
+  });
+
   themeToggle.addEventListener("click", function(){
     var isDark = document.documentElement.getAttribute("data-theme") === "dark";
     var next = isDark ? "light" : "dark";
@@ -1857,6 +1863,16 @@ var EXPORT_CSS =
     loadTabIntoEditor(initialTab);
     renderTabs();
   }
+
+  try {
+    var startAction = new URLSearchParams(window.location.search).get("action");
+    if (startAction === "import"){
+      window.history.replaceState(null, "", window.location.pathname);
+      setTimeout(function(){ fileInput.click(); }, 300);
+    } else if (startAction){
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  } catch (e) { /* abaikan */ }
 
   setInterval(autosaveNow, AUTOSAVE_INTERVAL_MS);
   window.addEventListener("beforeunload", autosaveNow);
