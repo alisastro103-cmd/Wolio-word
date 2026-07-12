@@ -520,6 +520,30 @@
     catch (e){ /* storage full/blocked, ignore */ }
   }
 
+  /* Reopen the most recently closed tab, like Chrome's Ctrl+Shift+T */
+  function reopenLastClosedTab(){
+    var list = [];
+    try {
+      var raw = window.localStorage.getItem(ARCHIVE_KEY);
+      if (raw) list = JSON.parse(raw) || [];
+    } catch (e){ list = []; }
+    if (!list.length){
+      setStatus("No recently closed tabs to reopen.");
+      return;
+    }
+    var last = list.pop();
+    try { window.localStorage.setItem(ARCHIVE_KEY, JSON.stringify(list)); }
+    catch (e){ /* storage full/blocked, ignore */ }
+
+    var tab = addNewTab(last.filename, last.content);
+    tab.mode = last.mode || "edit";
+    tab.history = last.history || [];
+    tab.folder = last.folder || null;
+    loadTabIntoEditor(tab);
+    renderTabs();
+    setStatus('Reopened "' + tab.filename + '".');
+  }
+
   /* ---- Version history (checkpoint per tab) ---- */
   var MAX_HISTORY = 30;
   var AUTO_SNAPSHOT_MIN_INTERVAL_MS = 45000; // don't auto-snapshot more often than this
@@ -758,6 +782,17 @@
 
       el.addEventListener("click", function(){ switchToTab(tab.id); });
 
+      // Middle-click to close, like Chrome tabs.
+      el.addEventListener("auxclick", function(e){
+        if (e.button === 1){
+          e.preventDefault();
+          closeTab(tab.id);
+        }
+      });
+      el.addEventListener("mousedown", function(e){
+        if (e.button === 1) e.preventDefault(); // stop the browser's default middle-click autoscroll
+      });
+
       el.addEventListener("dragstart", function(e){
         el.classList.add("dragging");
         e.dataTransfer.effectAllowed = "move";
@@ -773,6 +808,10 @@
         var toIdx = tabs.findIndex(function(t){ return t.id === tab.id; });
         if (fromIdx === -1 || toIdx === -1) return;
         var moved = tabs.splice(fromIdx, 1)[0];
+        // Removing the dragged tab shifts every index after it back by one,
+        // so when moving forward the target index must be compensated --
+        // otherwise the tab lands one slot past where it was dropped.
+        if (fromIdx < toIdx) toIdx--;
         tabs.splice(toIdx, 0, moved);
         renderTabs();
       });
@@ -1020,12 +1059,10 @@
     if (idx === -1) return;
     var tab = tabs[idx];
 
-    var deletePermanently = window.confirm(
-      'Delete tab "' + tab.filename + '" along with its version history?\n\n' +
-      "OK = delete tab + version history (permanent)\n" +
-      "Cancel = just close the tab (history is kept)"
-    );
-    if (!deletePermanently) archiveTab(tab);
+    // Close instantly like Chrome/VSCode -- no confirmation dialog.
+    // The tab is archived first (like Chrome's "Recently closed tabs"),
+    // so its content and version history are never actually lost.
+    archiveTab(tab);
 
     var wasActive = (id === activeTabId);
     tabs.splice(idx, 1);
@@ -1040,7 +1077,7 @@
       loadTabIntoEditor(tabs[newIdx]);
     }
     renderTabs();
-    setStatus(deletePermanently ? 'Tab "' + tab.filename + '" & its history were deleted.' : 'Tab "' + tab.filename + '" closed, history kept.');
+    setStatus('Tab "' + tab.filename + '" closed.');
   }
 
   filenameInput.addEventListener("input", function(){
@@ -1153,6 +1190,8 @@
 
   function insertLink(){
     var start = editor.selectionStart, end = editor.selectionEnd;
+    var val = editor.value;
+    var selected = val.slice(start, end);
     var linkText = selected || "link text";
     var inserted = "[" + linkText + "](url)";
     editor.value = val.slice(0, start) + inserted + val.slice(end);
@@ -1737,6 +1776,8 @@ var EXPORT_CSS =
   /* ---- Command Palette ---- */
   var paletteCommands = [
     { label: "New: New project tab", hint: "New Tab", run: function(){ newTabBtn.click(); } },
+    { label: "Close active tab", hint: "Ctrl+W", run: function(){ if (activeTabId != null) closeTab(activeTabId); } },
+    { label: "Reopen closed tab", hint: "Ctrl+Shift+T", run: reopenLastClosedTab },
     { label: "New: from README template", hint: "Template", run: function(){ newTabFromTemplate("readme"); } },
     { label: "New: from CV template", hint: "Template", run: function(){ newTabFromTemplate("cv"); } },
     { label: "New: from Meeting Notes template", hint: "Template", run: function(){ newTabFromTemplate("meeting"); } },
@@ -1837,7 +1878,19 @@ var EXPORT_CSS =
     if (e.target === paletteOverlay) closePalette();
   });
 
-  /* ---- Global shortcuts: Ctrl/Cmd+K palette, Ctrl/Cmd+F find, Ctrl/Cmd+S save ---- */
+  /* Switch to the tab before/after the active one, wrapping around --
+     used by the Ctrl+PageUp/PageDown shortcut below (VSCode-style tab cycling). */
+  function switchToAdjacentTab(delta){
+    if (tabs.length < 2) return;
+    var idx = tabs.findIndex(function(t){ return t.id === activeTabId; });
+    if (idx === -1) return;
+    var nextIdx = (idx + delta + tabs.length) % tabs.length;
+    switchToTab(tabs[nextIdx].id);
+  }
+
+  /* ---- Global shortcuts: Ctrl/Cmd+K palette, Ctrl/Cmd+F find, Ctrl/Cmd+S save,
+     Ctrl/Cmd+W close tab, Ctrl/Cmd+Shift+T reopen closed tab,
+     Ctrl/Cmd+PageUp/PageDown switch tab (Chrome/VSCode-style) ---- */
   document.addEventListener("keydown", function(e){
     var mod = e.ctrlKey || e.metaKey;
     if (mod && e.key.toLowerCase() === "k"){
@@ -1850,6 +1903,18 @@ var EXPORT_CSS =
     } else if (mod && e.key.toLowerCase() === "s"){
       e.preventDefault();
       exportMd();
+    } else if (mod && e.shiftKey && e.key.toLowerCase() === "t"){
+      e.preventDefault();
+      reopenLastClosedTab();
+    } else if (mod && e.key.toLowerCase() === "w"){
+      e.preventDefault();
+      if (activeTabId != null) closeTab(activeTabId);
+    } else if (mod && e.key === "PageDown"){
+      e.preventDefault();
+      switchToAdjacentTab(1);
+    } else if (mod && e.key === "PageUp"){
+      e.preventDefault();
+      switchToAdjacentTab(-1);
     } else if (e.key === "Escape"){
       if (filesFlyout.classList.contains("open")) closeFilesFlyout();
       if (outlineFlyout.classList.contains("open")) closeOutlineFlyout();
