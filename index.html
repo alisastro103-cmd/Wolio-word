@@ -83,7 +83,10 @@
   }
 
   html,body{
-    margin:0; padding:0; height:100%;
+    margin:0; padding:0;
+    height:100%;
+    height:100dvh;
+    overflow:hidden;
     background:var(--bg);
     background-image:
       linear-gradient(to right, var(--grid) 1px, transparent 1px),
@@ -96,18 +99,17 @@
   /* Transisi halus saat halaman dibuka */
   body{
     opacity:0;
-    transform:translateY(6px);
-    transition:opacity .5s ease, transform .5s ease, background-color .25s ease, color .25s ease;
+    transition:opacity .35s ease, background-color .25s ease, color .25s ease;
   }
   body.loaded{
     opacity:1;
-    transform:translateY(0);
   }
 
   .page{
-    min-height:100vh;
+    height:100%;
     display:flex;
     flex-direction:column;
+    overflow:hidden;
   }
 
   .hero{
@@ -117,16 +119,28 @@
     align-items:center;
     justify-content:center;
     text-align:center;
-    padding:32px 24px;
-    gap:8px;
+    padding:clamp(10px,3vh,32px) clamp(16px,5vw,24px);
+    gap:clamp(2px,1vh,8px);
+    min-height:0;
+    overflow:hidden;
   }
 
-  .hero-logo{ width:96px; height:96px; color:var(--fg-strong); margin-bottom:8px; }
+  .hero-logo{
+    width:clamp(44px,9vh,96px);
+    height:clamp(44px,9vh,96px);
+    color:var(--fg-strong);
+    margin-bottom:clamp(2px,1vh,8px);
+    flex-shrink:0;
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity .4s ease, transform .4s ease;
+    transition-delay:.05s;
+  }
 
   .hero-title{
     font-family:"Fraunces", Georgia, "Times New Roman", serif;
     font-weight:600;
-    font-size:clamp(2.4rem, 8vw, 3.4rem);
+    font-size:clamp(1.7rem, 4.5vh + 2vw, 3.4rem);
     letter-spacing:-0.01em;
     margin:0;
     line-height:1.05;
@@ -137,17 +151,19 @@
     width:64px;
     height:2px;
     background:var(--fg-strong);
-    margin:18px 0 16px;
+    margin:clamp(8px,2vh,18px) 0 clamp(8px,2vh,16px);
     border:none;
+    flex-shrink:0;
   }
 
   .hero-tagline{
-    font-size:1rem;
+    font-size:clamp(0.82rem, 2vh, 1rem);
     color:var(--fg-muted);
     max-width:380px;
-    min-height:4.6em;
+    min-height:clamp(2.6em,12vh,4.6em);
     line-height:1.5;
-    margin:0 0 32px;
+    margin:0 0 clamp(10px,2.5vh,32px);
+    overflow:hidden;
   }
 
   .caret{
@@ -163,10 +179,21 @@
   .hero-actions{
     display:flex;
     flex-wrap:wrap;
-    gap:12px;
+    gap:clamp(8px,1.5vh,12px);
     justify-content:center;
     width:100%;
     max-width:420px;
+    flex-shrink:0;
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity .4s ease, transform .4s ease;
+    transition-delay:.15s;
+  }
+
+  body.loaded .hero-logo,
+  body.loaded .hero-actions{
+    opacity:1;
+    transform:translateY(0);
   }
 
   .btn{
@@ -208,10 +235,11 @@
   }
 
   .site-footer{
-    padding:20px 24px 28px;
+    padding:clamp(8px,2vh,20px) 24px clamp(10px,2.5vh,28px);
     text-align:center;
-    font-size:0.85rem;
+    font-size:0.8rem;
     color:var(--fg-muted);
+    flex-shrink:0;
   }
   .site-footer a{
     color:var(--fg-muted);
@@ -390,7 +418,18 @@
 
   window.addEventListener("DOMContentLoaded", function(){
     document.body.classList.add("loaded");
-    var tagline = "Membuat markdown menjadi mudah dengan Wolio Word. Ringan, cepat, dan 100% offline di browser kamu — tanpa install, tanpa akun, tanpa ribet.";
+    var taglines = [
+      "Membuat markdown menjadi mudah dengan Wolio Word. Ringan, cepat, dan 100% offline di browser kamu — tanpa install, tanpa akun, tanpa ribet.",
+      "Nulis Markdown secepat mikir. Wolio Word jalan penuh di browser, offline total, tanpa iklan, tanpa akun ribet.",
+      "Editor Markdown ala VS Code, tapi muat di saku kamu. Buka, tulis, simpan — semuanya offline.",
+      "Dari draft cepat sampai dokumentasi rapi, Wolio Word bantu kamu nulis Markdown tanpa drama.",
+      "Gak perlu internet, gak perlu login. Wolio Word siap dipakai kapan aja, di mana aja, di HP atau laptop kamu.",
+      "Markdown jadi menyenangkan: preview instan, tema gelap/terang, dan semuanya tersimpan otomatis.",
+      "Satu tab browser, semua yang kamu butuh buat nulis Markdown rapi dan cepat.",
+      "Wolio Word: ringan kayak notepad, lengkap kayak editor kode. Semuanya berjalan di browser kamu sendiri.",
+      "Ide muncul kapan aja — Wolio Word siap nampung, tanpa loading, tanpa server, tanpa drama."
+    ];
+    var tagline = taglines[Math.floor(Math.random() * taglines.length)];
     typeWriter(document.getElementById("heroTagline"), tagline, 24);
   });
 </script>
