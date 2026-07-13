@@ -369,6 +369,7 @@ main{
   display:flex;
   flex-direction:column;
   overflow:hidden;
+  position:relative;
 }
 .pane + .pane{
   border-left:1px solid var(--border);
@@ -619,20 +620,21 @@ footer{
 }
 .flyout-action:hover{background:var(--btn-bg-hover);}
 
-/* ---------- Find & Replace bar ---------- */
+/* ---------- Find popup ---------- */
 .find-bar{
   display:none;
   align-items:center;
   gap:6px;
-  padding:6px 10px;
+  padding:8px 10px;
   background:var(--bg-secondary);
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+  position:absolute;
+  top:8px;
+  right:8px;
+  z-index:40;
   flex-wrap:nowrap;
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:thin;
 }
 .find-bar.open{display:flex;}
 .find-bar input{
@@ -643,11 +645,11 @@ footer{
   border:1px solid var(--btn-border);
   border-radius:6px;
   padding:4px 8px;
-  width:120px;
+  width:140px;
   flex:0 0 auto;
 }
 .find-bar button{flex:0 0 auto;white-space:nowrap;}
-.find-count{font-size:11px;color:var(--fg-muted);white-space:nowrap;min-width:34px;flex:0 0 auto;}
+.find-count{font-size:11px;color:var(--fg-muted);white-space:nowrap;min-width:44px;flex:0 0 auto;text-align:center;}
 
 /* ---------- Additional status bar ---------- */
 .footer-right{display:flex;align-items:center;gap:14px;}

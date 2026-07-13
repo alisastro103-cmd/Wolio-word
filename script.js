@@ -379,12 +379,11 @@
   var historyCheckpointBtn = document.getElementById("historyCheckpointBtn");
   var findBar = document.getElementById("findBar");
   var findInput = document.getElementById("findInput");
-  var replaceInput = document.getElementById("replaceInput");
+
   var findPrevBtn = document.getElementById("findPrevBtn");
   var findNextBtn = document.getElementById("findNextBtn");
   var findCount = document.getElementById("findCount");
-  var replaceOneBtn = document.getElementById("replaceOneBtn");
-  var replaceAllBtn = document.getElementById("replaceAllBtn");
+
   var findCloseBtn = document.getElementById("findCloseBtn");
   var paletteOverlay = document.getElementById("paletteOverlay");
   var paletteInput = document.getElementById("paletteInput");
@@ -1905,46 +1904,6 @@ var EXPORT_CSS =
     }
   });
 
-  function replaceOne(){
-    var needle = findInput.value;
-    if (!needle) return;
-    var start = editor.selectionStart, end = editor.selectionEnd;
-    var selected = editor.value.slice(start, end);
-    if (selected.toLowerCase() === needle.toLowerCase()){
-      var val = editor.value;
-      editor.value = val.slice(0, start) + replaceInput.value + val.slice(end);
-      editor.setSelectionRange(start, start + replaceInput.value.length);
-      scheduleRender();
-      setStatus("1 match replaced.");
-    }
-    findFrom(editor.selectionEnd, true);
-  }
-  function replaceAll(){
-    var needle = findInput.value;
-    if (!needle) return;
-    var text = editor.value;
-    var lower = text.toLowerCase();
-    var target = needle.toLowerCase();
-    var pieces = [];
-    var idx = 0, count = 0;
-    while (true){
-      var found = lower.indexOf(target, idx);
-      if (found === -1){ pieces.push(text.slice(idx)); break; }
-      pieces.push(text.slice(idx, found));
-      pieces.push(replaceInput.value);
-      idx = found + needle.length;
-      count++;
-    }
-    if (count > 0){
-      editor.value = pieces.join("");
-      scheduleRender();
-    }
-    setStatus(count + " match(es) replaced.");
-    updateFindCount();
-  }
-  replaceOneBtn.addEventListener("click", replaceOne);
-  replaceAllBtn.addEventListener("click", replaceAll);
-
   /* ---- Command Palette ---- */
   var paletteCommands = [
     { label: "New: New project tab", hint: "New Tab", run: function(){ newTabBtn.click(); } },
@@ -1969,7 +1928,7 @@ var EXPORT_CSS =
     { label: "Mode: Editor", hint: "View", run: function(){ setMode("edit"); } },
     { label: "Mode: Review", hint: "View", run: function(){ setMode("preview"); } },
     { label: "Mode: Split", hint: "View", run: function(){ setMode("split"); } },
-    { label: "Find & Replace", hint: "Find", run: openFindBar },
+    { label: "Find in Document", hint: "Find", run: openFindBar },
     { label: "Show tab list", hint: "Files", run: openFilesFlyout },
     { label: "Move active tab to folder...", hint: "Folder", run: function(){ var t = getActiveTab(); if (t) promptSetFolder(t); } },
     { label: "Show table of contents (outline)", hint: "Outline", run: openOutlineFlyout },

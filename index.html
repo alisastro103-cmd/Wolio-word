@@ -193,14 +193,6 @@
     50%, 100%{ opacity:0; }
   }
 
-  .tagline-text.tagline-selected{
-    background:#2f6fed;
-    color:#fff;
-    border-radius:2px;
-    box-decoration-break:clone;
-    -webkit-box-decoration-break:clone;
-  }
-
   .hero-actions{
     display:flex;
     flex-wrap:wrap;
@@ -404,65 +396,21 @@
     reader.readAsText(file, "UTF-8");
   });
 
-  /* ---- Typing effect on the tagline: natural variable-speed typing, then
-     highlight (select-all style) with a randomized pause, delete, another
-     randomized pause, then the next tagline — repeats forever. ---- */
-  function randBetween(min, max){
-    return min + Math.random() * (max - min);
-  }
-
-  function typeWriter(el, text, onDone){
+  /* ---- Typing effect on the tagline, with a blinking text cursor ---- */
+  function typeWriter(el, text, speed){
     var i = 0;
     el.textContent = "";
-    var textSpan = document.createElement("span");
-    textSpan.className = "tagline-text";
     var caret = document.createElement("span");
     caret.className = "caret";
     caret.textContent = "|";
-    el.appendChild(textSpan);
     el.appendChild(caret);
     (function step(){
       if (i < text.length){
-        var ch = text.charAt(i);
-        textSpan.textContent += ch;
+        caret.insertAdjacentText("beforebegin", text.charAt(i));
         i++;
-        var delay = randBetween(20, 60);
-        if (ch === " ") delay += randBetween(0, 70);
-        else if (/[,.!?—]/.test(ch)) delay += randBetween(70, 180);
-        setTimeout(step, delay);
-      } else if (onDone){
-        onDone(textSpan, caret);
+        setTimeout(step, speed);
       }
     })();
-  }
-
-  function cycleTaglines(el, taglines, opts){
-    opts = opts || {};
-    var highlightRange = opts.highlightRange || [500, 1500];
-    var pauseRange = opts.pauseRange || [500, 1500];
-    var order = taglines.slice();
-    for (var i = order.length - 1; i > 0; i--){
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = order[i]; order[i] = order[j]; order[j] = tmp;
-    }
-    var idx = 0;
-    function next(){
-      var text = order[idx % order.length];
-      idx++;
-      typeWriter(el, text, function(textSpan, caret){
-        var highlightMs = randBetween(highlightRange[0], highlightRange[1]);
-        caret.style.visibility = "hidden";
-        textSpan.classList.add("tagline-selected");
-        setTimeout(function(){
-          textSpan.textContent = "";
-          textSpan.classList.remove("tagline-selected");
-          caret.style.visibility = "";
-          var pauseMs = randBetween(pauseRange[0], pauseRange[1]);
-          setTimeout(next, pauseMs);
-        }, highlightMs);
-      });
-    }
-    next();
   }
 
   window.addEventListener("DOMContentLoaded", function(){
@@ -476,14 +424,10 @@
       "Markdown made fun: instant preview, dark/light theme, and everything saves automatically.",
       "One browser tab, everything you need to write clean, fast Markdown.",
       "Wolio Word: light as a notepad, complete as a code editor. Everything runs in your own browser.",
-      "Ideas can strike anytime — Wolio Word is ready to catch them, no loading, no server, no drama.",
-      "Yeah, it's just markdown, but the good kind — clean editor, live preview, zero setup, done.",
-      "No sign up, no cloud, no weird permissions. Just open it and start typing your thoughts down.",
-      "Built for late-night writing sessions when you just want to dump ideas fast, save, and go.",
-      "Kinda like a notes app, kinda like a code editor — Wolio Word sits right in between, offline.",
-      "Open a tab, write, hit save. That's it, that's the whole workflow, nothing else to learn."
+      "Ideas can strike anytime — Wolio Word is ready to catch them, no loading, no server, no drama."
     ];
-    cycleTaglines(document.getElementById("heroTagline"), taglines, { highlightRange: [500, 1500], pauseRange: [500, 1500] });
+    var tagline = taglines[Math.floor(Math.random() * taglines.length)];
+    typeWriter(document.getElementById("heroTagline"), tagline, 24);
   });
 
   var btnInstallApp = document.getElementById("btnInstallApp");
