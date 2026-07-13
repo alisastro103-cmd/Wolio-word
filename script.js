@@ -366,7 +366,7 @@
   var mainArea = document.getElementById("mainArea");
   var paneResizer = document.getElementById("paneResizer");
 
-  /* ---- Refs: activity bar, files flyout, find/replace, palette, status ---- */
+  /* ---- Refs: activity bar, files flyout, find, palette, status ---- */
   var sidebarFilesBtn = document.getElementById("sidebarFilesBtn");
   var sidebarOutlineBtn = document.getElementById("sidebarOutlineBtn");
   var outlineFlyout = document.getElementById("outlineFlyout");
@@ -379,11 +379,9 @@
   var historyCheckpointBtn = document.getElementById("historyCheckpointBtn");
   var findBar = document.getElementById("findBar");
   var findInput = document.getElementById("findInput");
-
   var findPrevBtn = document.getElementById("findPrevBtn");
   var findNextBtn = document.getElementById("findNextBtn");
   var findCount = document.getElementById("findCount");
-
   var findCloseBtn = document.getElementById("findCloseBtn");
   var paletteOverlay = document.getElementById("paletteOverlay");
   var paletteInput = document.getElementById("paletteInput");
@@ -1810,7 +1808,7 @@ var EXPORT_CSS =
   document.head.appendChild(exportStyleTag);
 
   /* ============================================================
-     3) ADDITIONAL FEATURES: cursor position, find & replace, command palette
+     3) ADDITIONAL FEATURES: cursor position, find, command palette
      ============================================================ */
 
   /* ---- Line:column position in the status bar (VSCode style) ---- */
@@ -1827,7 +1825,7 @@ var EXPORT_CSS =
     editor.addEventListener(evt, updateCursorPos);
   });
 
-  /* ---- Find & Replace ---- */
+  /* ---- Find ---- */
   function closeFindBar(){
     findBar.classList.remove("open");
     sidebarSearchBtn.classList.remove("active");
@@ -1868,6 +1866,61 @@ var EXPORT_CSS =
   }
   findInput.addEventListener("input", updateFindCount);
 
+  function locateInEditor(idx, length){
+    var mirror = document.createElement("div");
+    var cs = getComputedStyle(editor);
+    var props = ["boxSizing", "width", "paddingTop", "paddingRight", "paddingBottom",
+      "paddingLeft", "borderTopWidth", "borderRightWidth", "borderBottomWidth",
+      "borderLeftWidth", "fontFamily", "fontSize", "fontWeight", "fontStyle",
+      "letterSpacing", "lineHeight", "tabSize", "wordSpacing"];
+    props.forEach(function(p){ mirror.style[p] = cs[p]; });
+    mirror.style.position = "absolute";
+    mirror.style.top = "0";
+    mirror.style.left = "-9999px";
+    mirror.style.height = "auto";
+    mirror.style.whiteSpace = "pre-wrap";
+    mirror.style.wordWrap = "break-word";
+    mirror.style.visibility = "hidden";
+
+    var before = document.createTextNode(editor.value.slice(0, idx));
+    var mark = document.createElement("span");
+    mark.textContent = editor.value.slice(idx, idx + length) || " ";
+    mirror.appendChild(before);
+    mirror.appendChild(mark);
+    document.body.appendChild(mirror);
+
+    var mirrorRect = mirror.getBoundingClientRect();
+    var markRect = mark.getBoundingClientRect();
+    document.body.removeChild(mirror);
+
+    return {
+      top: markRect.top - mirrorRect.top,
+      left: markRect.left - mirrorRect.left,
+      width: markRect.width,
+      height: markRect.height
+    };
+  }
+
+  function flashMatch(idx, length){
+    var loc = locateInEditor(idx, length);
+    if (!loc) return;
+
+    var top = editor.offsetTop + loc.top - editor.scrollTop;
+    var left = editor.offsetLeft + loc.left - editor.scrollLeft;
+    if (top < editor.offsetTop || top > editor.offsetTop + editor.clientHeight) return;
+
+    var el = document.createElement("div");
+    el.className = "find-flash";
+    el.style.top = top + "px";
+    el.style.left = left + "px";
+    el.style.width = Math.max(loc.width, 4) + "px";
+    el.style.height = loc.height + "px";
+
+    var host = editor.parentElement;
+    host.appendChild(el);
+    el.addEventListener("animationend", function(){ el.remove(); });
+  }
+
   function findFrom(startPos, forward){
     var needle = findInput.value;
     if (!needle) return;
@@ -1888,13 +1941,17 @@ var EXPORT_CSS =
     editor.focus();
     editor.setSelectionRange(idx, idx + needle.length);
     updateCursorPos();
+
+    requestAnimationFrame(function(){ flashMatch(idx, needle.length); });
   }
   findNextBtn.addEventListener("click", function(){
     findFrom(editor.selectionEnd, true);
   });
+
   findPrevBtn.addEventListener("click", function(){
     findFrom(editor.selectionStart, false);
   });
+
   findInput.addEventListener("keydown", function(e){
     if (e.key === "Enter"){
       e.preventDefault();

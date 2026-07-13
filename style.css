@@ -388,6 +388,20 @@ main{
   flex:1;
   overflow:auto;
   min-height:0;
+  position:relative;
+}
+
+.find-flash{
+  position:absolute;
+  pointer-events:none;
+  border-radius:3px;
+  background:var(--accent);
+  opacity:0;
+  animation:findFlashBlink .5s ease-in-out 2;
+}
+@keyframes findFlashBlink{
+  0%,100%{opacity:0;}
+  50%{opacity:.55;}
 }
 
 textarea#editor{

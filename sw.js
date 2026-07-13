@@ -1,7 +1,3 @@
-// Wolio Word service worker — network-first for core files (HTML/CSS/JS)
-// so updates always take effect, cache-first for fonts/icons that rarely change.
-// Cache version: MUST bump this number every time a core file changes, so users
-// automatically get the update (instead of an old version stuck in cache forever).
 const CACHE_NAME = "wolio-word-v14";
 
 // Files whose content changes OFTEN (app code) -> network-first
