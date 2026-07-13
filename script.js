@@ -1492,8 +1492,19 @@
   });
 
   var focusModeBtn = document.getElementById("focusModeBtn");
+  var focusModeHideEls = [
+    document.querySelector("header .brand"),
+    document.querySelector(".activity-bar"),
+    document.querySelector(".tabbar"),
+    document.getElementById("paneEdit") ? document.getElementById("paneEdit").querySelector(".pane-header") : null,
+    document.getElementById("panePreview") ? document.getElementById("panePreview").querySelector(".pane-header") : null
+  ].filter(Boolean);
   function toggleFocusMode(){
-    document.body.classList.toggle("focus-mode");
+    var on = !document.body.classList.contains("focus-mode");
+    document.body.classList.toggle("focus-mode", on);
+    focusModeHideEls.forEach(function(el){
+      el.style.display = on ? "none" : "";
+    });
   }
   focusModeBtn.addEventListener("click", toggleFocusMode);
 
