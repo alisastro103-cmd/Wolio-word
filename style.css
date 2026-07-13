@@ -950,7 +950,6 @@ footer{
 }
 
 /* ---------- Focus Mode ---------- */
-body.focus-mode .brand,
 body.focus-mode .activity-bar,
 body.focus-mode .tabbar,
 body.focus-mode .pane-header{

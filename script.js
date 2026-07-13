@@ -1493,7 +1493,6 @@
 
   var focusModeBtn = document.getElementById("focusModeBtn");
   var focusModeHideEls = [
-    document.querySelector("header .brand"),
     document.querySelector(".activity-bar"),
     document.querySelector(".tabbar"),
     document.getElementById("paneEdit") ? document.getElementById("paneEdit").querySelector(".pane-header") : null,
