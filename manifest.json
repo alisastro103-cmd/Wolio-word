@@ -1,9 +1,9 @@
 {
-  "id": "/app.html",
+  "id": "/index.html",
   "name": "Wolio Word",
   "short_name": "Wolio Word",
   "description": "A VSCode-style Markdown editor that runs 100% offline in the browser.",
-  "start_url": "./app.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
