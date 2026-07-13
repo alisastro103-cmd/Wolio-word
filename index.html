@@ -165,7 +165,7 @@
   }
 
   .hero-underline{
-    width:370px;
+    width:140px;
     height:1px;
     background:var(--fg-strong);
     margin:clamp(4px,1vh,8px) 0 clamp(8px,2vh,16px);
@@ -436,19 +436,36 @@
     })();
   }
 
+  function shuffled(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
   function cycleTaglines(el, taglines, opts){
     opts = opts || {};
     var highlightRange = opts.highlightRange || [500, 1500];
     var pauseRange = opts.pauseRange || [500, 1500];
-    var order = taglines.slice();
-    for (var i = order.length - 1; i > 0; i--){
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = order[i]; order[i] = order[j]; order[j] = tmp;
-    }
-    var idx = 0;
+    var extraTaglines = opts.extraTaglines || [];
+    var extraChance = opts.extraChance || 0;
+    var order = shuffled(taglines);
+    var extraOrder = shuffled(extraTaglines);
+    var idx = 0, extraIdx = 0;
     function next(){
-      var text = order[idx % order.length];
-      idx++;
+      var useExtra = extraTaglines.length > 0 && Math.random() < extraChance;
+      var text;
+      if (useExtra){
+        if (extraIdx > 0 && extraIdx % extraOrder.length === 0) extraOrder = shuffled(extraTaglines);
+        text = extraOrder[extraIdx % extraOrder.length];
+        extraIdx++;
+      } else {
+        if (idx > 0 && idx % order.length === 0) order = shuffled(taglines);
+        text = order[idx % order.length];
+        idx++;
+      }
       typeWriter(el, text, function(textSpan, caret){
         var highlightMs = randBetween(highlightRange[0], highlightRange[1]);
         caret.style.visibility = "hidden";
@@ -483,7 +500,15 @@
       "Kinda like a notes app, kinda like a code editor — Wolio Word sits right in between, offline.",
       "Open a tab, write, hit save. That's it, that's the whole workflow, nothing else to learn."
     ];
-    cycleTaglines(document.getElementById("heroTagline"), taglines, { highlightRange: [500, 1500], pauseRange: [500, 1500] });
+    var extraTaglines = [
+      "A government that struggles to trace where trillion-rupiah funds disappear, yet demonstrates absolute mathematical genius when inventing taxes for jogging and breathing.",
+      "They genuinely believe that a university degree can be ruined by playing video games, while simultaneously sharing completely unverified conspiracy theories on WhatsApp.",
+      "They provide zero digital infrastructure or support for small businesses, but they are always the first in line to take a cut of the daily digital revenue.",
+      "In a justice system where verdicts are for sale, the scales of justice aren't measuring guilt—they are just weighing the thickness of the bribe.",
+      "A government that is completely clueless about where our tax money goes, yet desperately needs to know the exact size of our house and the brand of our AC.",
+      "They diluted the coal quality for personal profit, successfully blacking out the entire region while keeping their own futures incredibly bright."
+    ];
+    cycleTaglines(document.getElementById("heroTagline"), taglines, { highlightRange: [500, 1500], pauseRange: [500, 1500], extraTaglines: extraTaglines, extraChance: 0.25 });
   });
 
   var btnInstallApp = document.getElementById("btnInstallApp");
