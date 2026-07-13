@@ -1491,6 +1491,12 @@
     });
   });
 
+  var focusModeBtn = document.getElementById("focusModeBtn");
+  function toggleFocusMode(){
+    document.body.classList.toggle("focus-mode");
+  }
+  focusModeBtn.addEventListener("click", toggleFocusMode);
+
   /* ---- Export helpers ---- */
   function download(filename, mime, content){
     var blob = new Blob([content], { type: mime });
@@ -1574,6 +1580,161 @@
     setStatus('Exported as an HTML page: "' + name + '"');
   }
 
+  /* ---- DOCX export (hand-rolled ZIP writer, store/no-compression method — no external deps) ---- */
+  function crc32(bytes){
+    if (!crc32.table){
+      var t = [];
+      for (var n = 0; n < 256; n++){
+        var c = n;
+        for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        t[n] = c >>> 0;
+      }
+      crc32.table = t;
+    }
+    var crc = 0xFFFFFFFF;
+    for (var i = 0; i < bytes.length; i++) crc = crc32.table[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function zipStore(files){
+    function u16(v){ return [v & 255, (v >>> 8) & 255]; }
+    function u32(v){ return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; }
+    var parts = [], central = [], offset = 0;
+    files.forEach(function(f){
+      var nameBytes = new TextEncoder().encode(f.name);
+      var data = f.data;
+      var crc = crc32(data);
+      var localHeader = new Uint8Array([].concat(
+        u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0),
+        u32(crc), u32(data.length), u32(data.length), u16(nameBytes.length), u16(0)
+      ));
+      parts.push(localHeader, nameBytes, data);
+      central.push(new Uint8Array([].concat(
+        u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0),
+        u32(crc), u32(data.length), u32(data.length), u16(nameBytes.length), u16(0), u16(0), u16(0), u16(0),
+        u32(0), u32(offset)
+      )), nameBytes);
+      offset += localHeader.length + nameBytes.length + data.length;
+    });
+    var centralSize = central.reduce(function(a, p){ return a + p.length; }, 0);
+    var end = new Uint8Array([].concat(
+      u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(centralSize), u32(offset), u16(0)
+    ));
+    var all = parts.concat(central, [end]);
+    var total = all.reduce(function(a, p){ return a + p.length; }, 0);
+    var out = new Uint8Array(total), pos = 0;
+    all.forEach(function(p){ out.set(p, pos); pos += p.length; });
+    return out;
+  }
+
+  function docxEscape(s){
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function docxRun(text, opts){
+    opts = opts || {};
+    var rpr = "";
+    if (opts.bold) rpr += "<w:b/>";
+    if (opts.italic) rpr += "<w:i/>";
+    if (opts.code) rpr += '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>';
+    if (opts.sz) rpr += '<w:sz w:val="' + opts.sz + '"/>';
+    return "<w:r>" + (rpr ? "<w:rPr>" + rpr + "</w:rPr>" : "") +
+      '<w:t xml:space="preserve">' + docxEscape(text) + "</w:t></w:r>";
+  }
+
+  function docxRuns(text){
+    var out = "", re = /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`)/g, last = 0, m;
+    while ((m = re.exec(text))){
+      if (m.index > last) out += docxRun(text.slice(last, m.index));
+      var tok = m[0];
+      if (tok.slice(0, 2) === "**") out += docxRun(tok.slice(2, -2), { bold: true });
+      else if (tok[0] === "`") out += docxRun(tok.slice(1, -1), { code: true });
+      else out += docxRun(tok.slice(1, -1), { italic: true });
+      last = re.lastIndex;
+    }
+    if (last < text.length) out += docxRun(text.slice(last));
+    return out || docxRun("");
+  }
+
+  function markdownToDocxBody(src){
+    var lines = src.replace(/\r\n/g, "\n").split("\n");
+    var body = "", inCode = false, codeLines = [];
+    function flushCode(){
+      codeLines.forEach(function(l){
+        body += "<w:p>" + docxRun(l, { code: true }) + "</w:p>";
+      });
+      codeLines = [];
+    }
+    for (var i = 0; i < lines.length; i++){
+      var line = lines[i];
+      if (/^```/.test(line)){
+        if (!inCode){ inCode = true; codeLines = []; }
+        else { inCode = false; flushCode(); }
+        continue;
+      }
+      if (inCode){ codeLines.push(line); continue; }
+      if (line.trim() === ""){ body += "<w:p/>"; continue; }
+
+      var h = line.match(/^(#{1,6})\s+(.*)$/);
+      if (h){
+        var level = h[1].length;
+        var sz = level === 1 ? 32 : level === 2 ? 28 : level === 3 ? 24 : 22;
+        body += '<w:p><w:pPr><w:spacing w:before="240" w:after="120"/></w:pPr>' +
+          docxRun(h[2], { bold: true, sz: sz }) + "</w:p>";
+        continue;
+      }
+      var quote = line.match(/^>\s?(.*)$/);
+      if (quote){
+        body += '<w:p><w:pPr><w:ind w:left="720"/></w:pPr>' + docxRun(quote[1], { italic: true }) + "</w:p>";
+        continue;
+      }
+      var ol = line.match(/^\s*(\d+)\.\s+(.*)$/);
+      var ul = !ol && line.match(/^\s*[-*+]\s+(.*)$/);
+      if (ol || ul){
+        var text = ol ? ol[2] : ul[1];
+        var bullet = ol ? ol[1] + ". " : "\u2022 ";
+        body += '<w:p><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr>' +
+          docxRun(bullet) + docxRuns(text) + "</w:p>";
+        continue;
+      }
+      body += "<w:p>" + docxRuns(line) + "</w:p>";
+    }
+    if (inCode) flushCode();
+    return body;
+  }
+
+  function exportDocx(){
+    var name = (filenameInput.value.trim().replace(/\.(md|markdown)$/i, "") || "README") + ".docx";
+    var documentXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+      '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' +
+      markdownToDocxBody(editor.value) +
+      '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417"/></w:sectPr>' +
+      "</w:body></w:document>";
+    var contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      "</Types>";
+    var rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      "</Relationships>";
+    var enc = new TextEncoder();
+    var zipBytes = zipStore([
+      { name: "[Content_Types].xml", data: enc.encode(contentTypes) },
+      { name: "_rels/.rels", data: enc.encode(rels) },
+      { name: "word/document.xml", data: enc.encode(documentXml) }
+    ]);
+    var blob = new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    setStatus('Exported as Word document: "' + name + '"');
+  }
+
   /* ---- Import/Export flyout (triggered by the gear button in the sidebar) ---- */
   var sidebarSettingsBtn = document.getElementById("sidebarSettingsBtn");
   var settingsFlyout = document.getElementById("settingsFlyout");
@@ -1615,6 +1776,7 @@
     if (kind === "md") exportMd();
     else if (kind === "html") exportHtml();
     else if (kind === "txt") exportTxt();
+    else if (kind === "docx") exportDocx();
     else if (kind === "pdf") exportPdf();
   });
 
@@ -1786,7 +1948,9 @@ var EXPORT_CSS =
     { label: "Export as .md", hint: "Ctrl+S", run: exportMd },
     { label: "Export as .txt", hint: "Export", run: exportTxt },
     { label: "Export as .html", hint: "Export", run: exportHtml },
-    { label: "Export as .pdf", hint: "Export", run: exportPdf },
+    { label: "Export as .docx", hint: "Export", run: exportDocx },
+    { label: "Export as .pdf", hint: "Ctrl+P", run: exportPdf },
+    { label: "Toggle Focus Mode", hint: "Ctrl+Shift+F", run: toggleFocusMode },
     { label: "Format: Bold", hint: "Ctrl+B", run: function(){ wrapSelection("**", "**", "bold text"); } },
     { label: "Format: Italic", hint: "Ctrl+I", run: function(){ wrapSelection("*", "*", "italic text"); } },
     { label: "Insert link", hint: "Ctrl+L", run: insertLink },
@@ -1899,7 +2063,11 @@ var EXPORT_CSS =
       else openPalette();
     } else if (mod && e.key.toLowerCase() === "f"){
       e.preventDefault();
-      openFindBar();
+      if (e.shiftKey) toggleFocusMode();
+      else openFindBar();
+    } else if (mod && e.key.toLowerCase() === "p"){
+      e.preventDefault();
+      exportPdf();
     } else if (mod && e.key.toLowerCase() === "s"){
       e.preventDefault();
       exportMd();

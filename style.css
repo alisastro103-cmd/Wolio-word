@@ -948,3 +948,16 @@ footer{
     --blockquote-border:#d1d9e0;
   }
 }
+
+/* ---------- Focus Mode ---------- */
+body.focus-mode .brand,
+body.focus-mode .activity-bar,
+body.focus-mode .tabbar,
+body.focus-mode .pane-header{
+  display:none !important;
+}
+body.focus-mode #focusModeBtn{
+  background:var(--btn-active-bg);
+  color:var(--btn-active-fg);
+  border-color:var(--btn-active-bg);
+}
